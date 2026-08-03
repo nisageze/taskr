@@ -16,8 +16,8 @@ class Priority(Enum):
 class Task:
     id: int
     title: str
-    due_date: date | None = field(default=None)
-    completed_at: datetime | None = field(default=None)
+    due_date: date | None = None
+    completed_at: datetime | None = None
     priority: Priority = Priority.MEDIUM
     status: Status = Status.PENDING
     created_at: datetime = field(default_factory=datetime.now)
