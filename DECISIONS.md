@@ -52,3 +52,54 @@ Bundan dolayı hatalı girişler olabilir. Literal düz metin olduğundan ve den
 
 - Alan sıralaması : varsayılansızlar (id, title) önce
     Zorunlu kural : varsayılanlı alan varsayılansızdan sonra gelmeli, çünkü üretilen __init__ sıradan bir Python fonksiyonu
+
+
+2 AĞUSTOS 2026 PAZAR
+
+- Ortak taban sınıf neden var?
+
+Tüm taskr hataları `TaskrError` adında ortak bir taban sınıftan türüyor. Sebebi, alt
+sınıfların da taban sınıfın bir örneği sayılması: tabanı yakalayan tek bir `except`
+satırı, ondan türeyen tüm hataları kapsar.
+
+Bunun iki pratik sonucu var:
+
+1. `cli.py` hataları tek tek listelemek zorunda kalmaz. Liste tutulsaydı, yeni bir hata
+   sınıfı eklendiğinde listeyi güncellemeyi unutmak mümkün olurdu; o hata hiçbir yerde
+   yakalanmaz ve kullanıcı ham traceback görürdü. SPEC bunu açıkça yasaklıyor.
+
+2. Yeni hata eklerken `cli.py`'ye dokunmak gerekmez. Değiştirilmesi gereken tek yer
+   `errors.py` olur.
+
+- finally neden taskr'da kullanılmıyor?
+
+`finally`, hata çıksa da çıkmasa da yapılması gereken temizlik işleri için vardır.
+taskr'daki tek kaynak dosya ve dosyalar `with` ile açılıyor. `with` bloğu, hata olsun
+olmasın dosyanın kapatılmasını zaten garanti ediyor — yani `finally`'nin işini yapıyor.
+Ayrıca yazmak aynı işi iki kez tekrarlamak olurdu.
+
+v1 kapsamında `with`'in kapsamadığı başka bir temizlik ihtiyacı yok. Böyle bir ihtiyaç
+doğarsa karar yeniden değerlendirilir.
+
+- Yeniden fırlatmada çıplak raise ve tür yazma
+
+Eğer hata durumunu ve nesneyi değiştirmeden traceback'iyle yukarı fırlatmak istersek raise'i except içerisinde çıplak kullanmamız gerekmektedir aksi halde yeni bir istisna nesnesi oluşur, eskisi bağlam olarak ona zincirlenir. Fakat bir hatayı başka bir hata olarak çevirmek istersek raise komutunu çevirmek istediğimiz hata ile beraber kullanabiliriz. from komutu raise ile kurmak istediğimiz zinciri bilinçli olarak kurmamıza yardımcı olur.
+
+- raise ile return arasındaki fark
+
+
+`return` fonksiyonu normal biçimde bitirir; çağıran taraf kaldığı yerden devam eder.
+`raise` ise akışı keser ve hatayı çağrı zincirinde yukarı taşır — fırlatma anında
+fonksiyondaki kalan satırlar çalışmaz.
+
+Karar açısından önemli olan, bunun çağıran taraf için ne anlama geldiği: hata `return`
+ile bildirilirse çağıran taraf gelen değerin sonuç mu hata mı olduğunu her seferinde
+kontrol etmek zorunda kalır. Kontrolü unuttuğu anda hata sessizce yayılır ve program
+çok sonra, alakasız bir yerde çöker. raise edilen hata varsayılan olarak yutulmaz, yutmak için bilinçli bir hamle gerekir; return None'da ise yutmak varsayılandır.
+
+Bu yüzden taskr'da hata durumları `raise` ile bildirilir, hiçbir fonksiyon hata
+nesnesini dönüş değeri olarak vermez.
+
+- Hata mesajını kim yazar: hesap katmanı mı, arayüz katmanı mı?
+
+Hata mesajının oluştuğu katman hesap katmanıdır (errors.py), hatanın türü, varsayılan mesaj kalıbının ne olacağının belirlendiği katmandır. Ekrana çıktı yazdırma ise arayüz katmanı (cli.py) katmanının işidir çünkü kullanıcı ile iletişime sahiptir, hesap katmanı girdinin çıktının nereden yapıldığı bilgisine sahip değildir. Hata mesajının kalıbı errors.py, raise eden katman storage.py, gösterimi ise cli.py'ın işidir.
