@@ -12,7 +12,6 @@ class Priority(Enum):
     HIGH = "high"
 
 @dataclass
-
 class Task:
     id: int
     title: str
@@ -21,3 +20,10 @@ class Task:
     priority: Priority = Priority.MEDIUM
     status: Status = Status.PENDING
     created_at: datetime = field(default_factory=datetime.now)
+
+
+    def is_overdue(self) -> bool:
+        if self.due_date is None:
+            return False
+        else:
+            return self.due_date < date.today()
