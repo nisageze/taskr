@@ -1,4 +1,8 @@
-1 AĞUSTOS 2026
+# DECISIONS.md — taskr tasarım kararları
+
+---
+
+## 1 AĞUSTOS 2026 — CUMARTESİ
 
 - src layout seçtim, çünkü uv varsayılanı ve paket ile depo kökü karışmıyor. Sonuç: komutlar uv run ile çalışıyor.
 
@@ -13,13 +17,12 @@ Bundan dolayı hatalı girişler olabilir. Literal düz metin olduğundan ve den
 
     Reddedilen Alternatif : class Status(str, Enum) mirası. Dönüşümü ortadan kaldırmıyor, yalnızca gizliyor. Katman sınırının görünür kalmasını tercih ettim.
 
-
 - Tarih Alanları için None varsayılan değeri
+
     due_date ve completed_at boş başlıyor. Yokluk uydurulmuş bir değerle değil, None ile temsil ediliyor. Tipteki | None ile imzadaki varsayılan birbirini tamamlıyor.
 
-- created_at için field(default_factory=datetime.now)
-
 - ENUM sırası Low -> High
+
     Enum tanım sırasını korur; list komutunda önceliğe göre sıralama bundan faydalanacak.
 
 - "Süresi geçmiş mi?" kontrolü models.py'ye ait
@@ -31,7 +34,7 @@ Bundan dolayı hatalı girişler olabilir. Literal düz metin olduğundan ve den
 
     Neden storage.py değil : Onun işi diskten okumak ve diske yazmak. Aldığı nesnenin hangi alanının neden değiştiğini bilmez, bilmemeli. Gecikme bilgisi diske hiç yazılmıyor.
 
-    Neden cli.py değil : 
+    Neden cli.py değil :
 - list ve stats aynı hesabı yapacak; kural orada olursa iki kez yazılır ve biri güncellemeyi unutur.
 - Hafta 7 Test 7 (overdue mantığı) nesne üzerinde üç satır, cli.py'de argparse çağırıp çıktı metni içinde işaret aramak demek
 - Hafta 9 sınavı cli.py'ye dokunmayı yasaklıyor; kural ekran katmanına gömülürse ikinci bir arayüz onu kullanamaz.
@@ -40,21 +43,25 @@ Bundan dolayı hatalı girişler olabilir. Literal düz metin olduğundan ve den
 
     Bağlantılı karar : Durum değiştirmek (done komutu ile status ve completed_at'in birlikte güncellenmesi) bu kararın dışında. Soru sormak nesnenin işi, dışarıdan komutla durum değiştirmek üst katmanın işi.
 
+    **[4 Ağustos revizyonu]** Yukarıda "girdisi due_date ve status" yazıyor, ancak 4 Ağustos'ta yazılan is_overdue metodu status'e bakmıyor. Status'ün hesaba girip girmeyeceği açık soruya dönüştü — bkz. 4 Ağustos, "status gecikme hesabına giriyor mu?". Kararın verildiği tarihteki hâli bilerek korundu.
 
 - Task mutable (frozen=FALSE)
 
     Gerekçe : done komutu status ve completed_at'i birlikte değiştirecek Frozen olsaydı her değişiklikte yeni nesne üretmek gerekirdi.
     Bedeli : İki alanın tutarlı kalmasını tip garanti etmiyor; bu sorumluluk done komutunu işleyen katmanda.
 
-- field(default_factory=datetime.now)
-    Parantez yok - fonksiyonun kendisi veriliyor, her nesne için ayrı çağırılıyor. Parantezli tanım sınıf tanımlandığı andaki zamanı sabitlerdi. 
+- created_at için field(default_factory=datetime.now)
+
+    Parantez yok - fonksiyonun kendisi veriliyor, her nesne için ayrı çağırılıyor. Parantezli tanım sınıf tanımlandığı andaki zamanı sabitlerdi.
     Deneyle doğruladım : 2 saniye arayla oluşturulan iki Task farklı created_at aldı.
 
 - Alan sıralaması : varsayılansızlar (id, title) önce
+
     Zorunlu kural : varsayılanlı alan varsayılansızdan sonra gelmeli, çünkü üretilen __init__ sıradan bir Python fonksiyonu
 
+---
 
-2 AĞUSTOS 2026 PAZAR
+## 2 AĞUSTOS 2026 — PAZAR
 
 - Ortak taban sınıf neden var?
 
@@ -81,12 +88,15 @@ Ayrıca yazmak aynı işi iki kez tekrarlamak olurdu.
 v1 kapsamında `with`'in kapsamadığı başka bir temizlik ihtiyacı yok. Böyle bir ihtiyaç
 doğarsa karar yeniden değerlendirilir.
 
+---
+
+## 3 AĞUSTOS 2026 — PAZARTESİ
+
 - Yeniden fırlatmada çıplak raise ve tür yazma
 
 Eğer hata durumunu ve nesneyi değiştirmeden traceback'iyle yukarı fırlatmak istersek raise'i except içerisinde çıplak kullanmamız gerekmektedir aksi halde yeni bir istisna nesnesi oluşur, eskisi bağlam olarak ona zincirlenir. Fakat bir hatayı başka bir hata olarak çevirmek istersek raise komutunu çevirmek istediğimiz hata ile beraber kullanabiliriz. from komutu raise ile kurmak istediğimiz zinciri bilinçli olarak kurmamıza yardımcı olur.
 
 - raise ile return arasındaki fark
-
 
 `return` fonksiyonu normal biçimde bitirir; çağıran taraf kaldığı yerden devam eder.
 `raise` ise akışı keser ve hatayı çağrı zincirinde yukarı taşır — fırlatma anında
@@ -104,6 +114,9 @@ nesnesini dönüş değeri olarak vermez.
 
 Hata mesajının oluştuğu katman hesap katmanıdır (errors.py), hatanın türü, varsayılan mesaj kalıbının ne olacağının belirlendiği katmandır. Ekrana çıktı yazdırma ise arayüz katmanı (cli.py) katmanının işidir çünkü kullanıcı ile iletişime sahiptir, hesap katmanı girdinin çıktının nereden yapıldığı bilgisine sahip değildir. Hata mesajının kalıbı errors.py, raise eden katman storage.py, gösterimi ise cli.py'ın işidir.
 
+---
+
+## 4 AĞUSTOS 2026 — SALI
 
 - due_date None olduğunda gecikmiş gözükmeli mi?
 
@@ -117,14 +130,18 @@ completed_at değeri kullanıcının done değeri girdiğinde belirlenen bir ver
 
 due_date kullanıcı tarafından girilen bir veri olduğundan kaynaklı sadece tarih olması fikri daha mantıklıdır, çünkü bir görevin kesin bitiş tarihi beklentisi olabilir fakat saat gürültü yaratacak bir detaydır. created_at ve completed_at ise program tarafından belirlenen tarihlerdir. bu verilerde saat verisi önemli rol oynamaktadır. iki farklı veri tipi seçimi bundan kaynaklı bilinçlidir. İki farklı veri tipi olmasından kaynaklanan veri uyumsuzluğunu ise Hafta 3'te storage.py üzerinde tek bir formata dönüştürerek çözümleyeceğim.
 
-- status gecikme hesabına giriyor mu?
+- status gecikme hesabına giriyor mu? — **AÇIK SORU**
 
 Tamamlanmış fakat tarihi geçmiş bir görev list çıktısında gecikmiş olarak işaretlenmeli mi? Geciken sayısı neyi ölçmeli? soruları şuan için cevaplanması erken olan sorular olduğundan kaynaklı Hafta 5'te stats yazılırken kapanacak.
 
 - Hata sınıfları neden somut değeri ayrıca bir alanda tutuyor? İsimlendirme kuralın ne?
 
-cli.py bu hatayı yakaladığında elinde iki şey olabilir: okunabilir bir metin, ya da yapısal veri. Metinden id'yi geri çıkarmak istersem string parse etmen gerekir, alan olarak dursa alan adı direkt kullanılabilir. taskr done 7, id yok, cli.py sadece hata basmakla kalmayıp mevcut id'leri de göstermek isterse o 7'ye kod tarafından ihtiyacı olur. Şu an kullanılmıyor.
+cli.py bu hatayı yakaladığında elinde iki şey olabilir: okunabilir bir metin, ya da yapısal veri. Metinden id'yi geri çıkarmak istersem string parse etmem gerekir, alan olarak dursa alan adı direkt kullanılabilir. taskr done 7, id yok, cli.py sadece hata basmakla kalmayıp mevcut id'leri de göstermek isterse o 7'ye kod tarafından ihtiyacı olur. Şu an kullanılmıyor.
 
-- field(default_factory=...) neden gerekli, parantezsiz yazım ne anlama geliyor?
+    İsimlendirme kuralı: Parametre adı ile alan adı aynı tutuluyor (`task_id` / `self.task_id`). İkisi aynı şeyi ifade ediyor, farklı isim vermek okuyanı ikinci bir eşleştirme yapmaya zorlar. İlk yazımda parametre `task_id`, alan `wrong_id` idi; alan adı değiştirildi çünkü alan adı `except ... as e:` bloğunda dışarıya görünen arayüzdür — `e.wrong_id` okunduğunda yargı bildiriyor, oysa id yanlış değil, yalnızca bulunamadı. Nötr isim tercih edildi. Aynı kural üç sınıfta da uygulandı: `task_id`, `invalid_date`, `invalid_file` — her biri o hatanın taşıdığı somut değeri adıyla söylüyor.
 
-created at için field kullanmadan tarihi datetime.now() olarak kullansaydık sınıf tanımlandığı anda sabit bir tarih değeri olacaktı ve kullanıcı başka zamanlarda başka görevler girse de hep ilk görevin tarihi ve saati kullanılacaktı, field ile bu hatanın önüne geçip kullanıcı her görev girdiğinde her nesne için yeniden çalışacak bir hesap yaptık bunu da datetime.now() yerine datetime.now fonksiyonun kendisini verip çağırmayı dataclass'a bıraktık. Alan olarak atamamızın sebebi kullanıcı görevi oluşturduğunda anlık alınacak ve daha sonrası için saklanacak bir veri olması, bugünün tarihi için istememe sebebimiz ise bu veri bize anlık olarak hesapta yardımcı olacak ve sonrasında saklamamıza gerek olmayacak bir veri olmasından kaynaklı değişken olarak kullandık.
+- Bugünün tarihi neden alan değil, yerel değişken?
+
+Alan olarak atamamızın sebebi kullanıcı görevi oluşturduğunda anlık alınacak ve daha sonrası için saklanacak bir veri olması, bugünün tarihi için istememe sebebimiz ise bu veri bize anlık olarak hesapta yardımcı olacak ve sonrasında saklamamıza gerek olmayacak bir veri olmasından kaynaklı değişken olarak kullandık.
+
+    Mekanizmanın kendisi (parantezli / parantezsiz yazım farkı) 1 Ağustos'ta deneyle doğrulanmıştı; buradaki karar, aynı mekanizmanın bugünün tarihi için neden **istenmediği**. Aynı davranış, iki farklı sonuç: created_at için donma istenen şey, bugünün tarihi için hatalı sonuç.
