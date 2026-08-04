@@ -103,3 +103,20 @@ nesnesini dönüş değeri olarak vermez.
 - Hata mesajını kim yazar: hesap katmanı mı, arayüz katmanı mı?
 
 Hata mesajının oluştuğu katman hesap katmanıdır (errors.py), hatanın türü, varsayılan mesaj kalıbının ne olacağının belirlendiği katmandır. Ekrana çıktı yazdırma ise arayüz katmanı (cli.py) katmanının işidir çünkü kullanıcı ile iletişime sahiptir, hesap katmanı girdinin çıktının nereden yapıldığı bilgisine sahip değildir. Hata mesajının kalıbı errors.py, raise eden katman storage.py, gösterimi ise cli.py'ın işidir.
+
+
+- due_date None olduğunda gecikmiş gözükmeli mi?
+
+due_date None olması durumu kullanıcı görev için bitiş tarihi girmediğinde gerçekleşen bir durumdur. bu kullanıcı tarafından bilinçli yapılmış olabilir, görevin bir bitiş tarihi olmayıp süresiz olabilir. Bu durumda süresi gecikmiş olarak göstermek mantık hatası olacaktır. Bool içerisinde kalma sebebi ise; kullanıcı gecikmiş görevleri listelemek isteğinde sadece gecikmiş görevleri göstermemiz gerekmektedir, bu senaryoda None değerlerine ihtiyacımız bulunmuyor. Bundan kaynaklı None durumunun çıktısı False döndürür, çünkü list tarafı ikisini farklı işlemeyecek. Ayrıca ekstra bir None çıktı seçeneği eklemek metodun dönüş tipini değiştirecekti , bu da ilerleyen haftalarda ekstra iş (None ihtimalini ayrıca ele alınması) yaratacaktı, imzayı bool olarak sade tutmak kendi fikrim.
+
+- Neden completed_at karşılaştırmanın sağ tarafı değil?
+
+completed_at değeri kullanıcının done değeri girdiğinde belirlenen bir veridir, due_date ise kullanıcının görevi atarken girdiği bitiş tarihidir. kullanıcı halen görev devam ederken tarih geçmişte olabilir, bundan dolayı görev devam ederken completed_at henüz oluşmamıştır, bunun önüne geçmek için kullanıcının sorgusu esnasında geçici olarak anlık tarih alınıp karşılaştırma yapılır. Bir alan oluşturmak yerine anlık geçici tarih almamdaki sebep ise;  hem gecikmeli/yanlış sonuç vermenin önüne geçmek, değer sorgu anında değil görev oluşturulduğu anda atanacağından gecikmiş bir görev gecikmemiş gibi görünürdü, hemde ekstra bir nesne ekstra bir veri ve depolamanın önüne geçmek.
+
+- Neden due_date date, ama created_at ve completed_at datetime?
+
+due_date kullanıcı tarafından girilen bir veri olduğundan kaynaklı sadece tarih olması fikri daha mantıklıdır, çünkü bir görevin kesin bitiş tarihi beklentisi olabilir fakat saat gürültü yaratacak bir detaydır. created_at ve completed_at ise program tarafından belirlenen tarihlerdir. bu verilerde saat verisi önemli rol oynamaktadır. iki farklı veri tipi seçimi bundan kaynaklı bilinçlidir. İki farklı veri tipi olmasından kaynaklanan veri uyumsuzluğunu ise Hafta 3'te storage.py üzerinde tek bir formata dönüştürerek çözümleyeceğim.
+
+- status gecikme hesabına giriyor mu?
+
+Tamamlanmış fakat tarihi geçmiş bir görev list çıktısında gecikmiş olarak işaretlenmeli mi? Geciken sayısı neyi ölçmeli? soruları şuan için cevaplanması erken olan sorular olduğundan kaynaklı Hafta 5'te stats yazılırken kapanacak.
