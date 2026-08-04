@@ -120,3 +120,11 @@ due_date kullanıcı tarafından girilen bir veri olduğundan kaynaklı sadece t
 - status gecikme hesabına giriyor mu?
 
 Tamamlanmış fakat tarihi geçmiş bir görev list çıktısında gecikmiş olarak işaretlenmeli mi? Geciken sayısı neyi ölçmeli? soruları şuan için cevaplanması erken olan sorular olduğundan kaynaklı Hafta 5'te stats yazılırken kapanacak.
+
+- Hata sınıfları neden somut değeri ayrıca bir alanda tutuyor? İsimlendirme kuralın ne?
+
+cli.py bu hatayı yakaladığında elinde iki şey olabilir: okunabilir bir metin, ya da yapısal veri. Metinden id'yi geri çıkarmak istersem string parse etmen gerekir, alan olarak dursa alan adı direkt kullanılabilir. taskr done 7, id yok, cli.py sadece hata basmakla kalmayıp mevcut id'leri de göstermek isterse o 7'ye kod tarafından ihtiyacı olur. Şu an kullanılmıyor.
+
+- field(default_factory=...) neden gerekli, parantezsiz yazım ne anlama geliyor?
+
+created at için field kullanmadan tarihi datetime.now() olarak kullansaydık sınıf tanımlandığı anda sabit bir tarih değeri olacaktı ve kullanıcı başka zamanlarda başka görevler girse de hep ilk görevin tarihi ve saati kullanılacaktı, field ile bu hatanın önüne geçip kullanıcı her görev girdiğinde her nesne için yeniden çalışacak bir hesap yaptık bunu da datetime.now() yerine datetime.now fonksiyonun kendisini verip çağırmayı dataclass'a bıraktık. Alan olarak atamamızın sebebi kullanıcı görevi oluşturduğunda anlık alınacak ve daha sonrası için saklanacak bir veri olması, bugünün tarihi için istememe sebebimiz ise bu veri bize anlık olarak hesapta yardımcı olacak ve sonrasında saklamamıza gerek olmayacak bir veri olmasından kaynaklı değişken olarak kullandık.
