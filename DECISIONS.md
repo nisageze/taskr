@@ -145,3 +145,9 @@ cli.py bu hatayı yakaladığında elinde iki şey olabilir: okunabilir bir meti
 Alan olarak atamamızın sebebi kullanıcı görevi oluşturduğunda anlık alınacak ve daha sonrası için saklanacak bir veri olması, bugünün tarihi için istememe sebebimiz ise bu veri bize anlık olarak hesapta yardımcı olacak ve sonrasında saklamamıza gerek olmayacak bir veri olmasından kaynaklı değişken olarak kullandık.
 
     Mekanizmanın kendisi (parantezli / parantezsiz yazım farkı) 1 Ağustos'ta deneyle doğrulanmıştı; buradaki karar, aynı mekanizmanın bugünün tarihi için neden **istenmediği**. Aynı davranış, iki farklı sonuç: created_at için donma istenen şey, bugünün tarihi için hatalı sonuç.
+
+- __main__.py import biçimi: mutlak (from taskr.cli import main)
+
+__main__.py dosyasında mutlak yoldan import yapmamdaki sebebi; her ne kadar göreli import taşınmaya daha dayanıklı olsa da projeyi daha okunabilir yapmak ve dosya bağımsızlıkları gibi avantajları tercih ettim. İlerleyen süreçlerde ekleyeceğim storage.py gibi dosyalarda kullanacağım importlarda da aynı yolu kulanmayı planlamaktayım çünkü proje içerisindeki dosyaları adaptasyonu kolay dosyalar olarak planlamayı düşünüyorum. Yazarken bilinçli bir tercih değildi, çalıştıktan sonra iki seçeneği karşılaştırıp arkasında durmaya karar verdim.
+
+Proje kuralı : taskr paketi içindeki tüm dosyalarda mutlak import kullanılacak.
