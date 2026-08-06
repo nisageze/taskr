@@ -151,3 +151,8 @@ Alan olarak atamamızın sebebi kullanıcı görevi oluşturduğunda anlık alı
 __main__.py dosyasında mutlak yoldan import yapmamdaki sebebi; her ne kadar göreli import taşınmaya daha dayanıklı olsa da projeyi daha okunabilir yapmak ve dosya bağımsızlıkları gibi avantajları tercih ettim. İlerleyen süreçlerde ekleyeceğim storage.py gibi dosyalarda kullanacağım importlarda da aynı yolu kulanmayı planlamaktayım çünkü proje içerisindeki dosyaları adaptasyonu kolay dosyalar olarak planlamayı düşünüyorum. Yazarken bilinçli bir tercih değildi, çalıştıktan sonra iki seçeneği karşılaştırıp arkasında durmaya karar verdim.
 
 Proje kuralı : taskr paketi içindeki tüm dosyalarda mutlak import kullanılacak.
+
+
+- __main__.py de if __name__ == "__main__" guardı yok.
+
+__main__.py dosyası yalnızca python -m taskr ile çalıştığı zaman devreye girer, o durumda da __name__ daima __main__ dir. Dosya import edilmediğinden dolayı böyle bir korumaya gerek yoktur.
