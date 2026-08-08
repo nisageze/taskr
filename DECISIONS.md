@@ -162,3 +162,16 @@ __main__.py dosyası yalnızca python -m taskr ile çalıştığı zaman devreye
 Commit atarken ingilizce dili tercih edeceğim çünkü, projede kullanıcıların göreceği kısımlar ingilizce olması gerektiğini düşünmekteyim. Commit geçmişi de projenin nasıl büyüdüğünü gösteren ikinci bir dokümandır, projemin planlamasını yaparken README ingilizce olacak kuralımı bundan sonraki commitler içinde uygulayacağım. Bu karardaki bedel ise ingilizce ana dilim değil (B2) bundan kaynaklı cümle kurarken zorlanabilir ve net cümleler kuramayabilirim. Geçmişte atmış olduğum türkçe commitler kalabilirler, bugünden itibaren bu kural geçerli olacaktır.
 
 ingilizce = kod, commit, README, docstring, kullanıcıya giden hata mesajları · türkçe = DECISIONS.md, CALISMA.md, NOTLAR.md, IDEAS.md.
+
+
+- Sürüm politikası 
+
+uygulamanın mevcut sürümü 0.1.0 olarak belirledim, sebebi; Semantic Versioning kaynaklı, kurallara göre sabit bir API bulunmayan halen geliştirme aşamasında olan projelerin sürümleri 0 ile başlayabilir. Sürüm güncellemesini ise arayüz durulduktan sonra 1.0.0 olarak güncelleme kararı aldım sonrasında gelecek olan güncellemeler ile beraber sürümü 1.1.0 vb. olarak güncelleme kararı aldım. Kullanıcılar tarafından sürüm takibinin kolay olması açısından. Şuanlık 0.1.0 tutmamın bir diğer sebebi de projede her an her şey değişebilir bundan kaynaklı bunun takibinin zor olacağını ön görüyorum. 
+
+- Repo düzeni değişimi
+
+Repo içerisinde kullanıcının ihtiyacı olmayan fazla dosyaları kaldırma kararı aldım çünkü projenin okunulabilirliğini olumsuz etkilediğini düşünüyorum. Geçmişte var olması git loglarda gözüktüğü anlamına geliyor, bunu bir problem olarak görmüyorum çünkü öğrenerek ve bazı şeylerde aldığım kararlar zaman içerisinde değiştiğinden bu tarz güncellemelerin geçmişi kirlettiğini değil dosya yapısının da süreç içerisinde değerlendirilip güncellendiği izlenimini verdiğini düşünüyorum. Bundan sonraki süreçlerde de mevcut repo kuralını (kullanıcının işine yaramayacak dosya/klasörler repo dışında kalmalı) devam ettireceğim.
+
+- .gitignore mantığı
+
+kaynak(kod) ve beyanlar repo'ya girer fakat üretilmiş çıktı girmez. pyproject.toml'dan üretebileceğimiz dosyaları bundan kaynaklı repoya koymamıza gerek yok. python-version da beyan olduğundan kaynaklı .gitignore da yer almıyor repo içerisinde mevcut. pyproject.toml ve .python-version dosyaları projeye bağlı olduğundan başka bir kullanıcı klonladığında aynı ortamı kurabilmesi için gerekli.
