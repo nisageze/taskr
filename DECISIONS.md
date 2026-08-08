@@ -156,3 +156,9 @@ Proje kuralı : taskr paketi içindeki tüm dosyalarda mutlak import kullanılac
 - __main__.py de if __name__ == "__main__" guardı yok.
 
 __main__.py dosyası yalnızca python -m taskr ile çalıştığı zaman devreye girer, o durumda da __name__ daima __main__ dir. Dosya import edilmediğinden dolayı böyle bir korumaya gerek yoktur.
+
+- commit hangi dil, neden?
+
+Commit atarken ingilizce dili tercih edeceğim çünkü, projede kullanıcıların göreceği kısımlar ingilizce olması gerektiğini düşünmekteyim. Commit geçmişi de projenin nasıl büyüdüğünü gösteren ikinci bir dokümandır, projemin planlamasını yaparken README ingilizce olacak kuralımı bundan sonraki commitler içinde uygulayacağım. Bu karardaki bedel ise ingilizce ana dilim değil (B2) bundan kaynaklı cümle kurarken zorlanabilir ve net cümleler kuramayabilirim. Geçmişte atmış olduğum türkçe commitler kalabilirler, bugünden itibaren bu kural geçerli olacaktır.
+
+ingilizce = kod, commit, README, docstring, kullanıcıya giden hata mesajları · türkçe = DECISIONS.md, CALISMA.md, NOTLAR.md, IDEAS.md.
