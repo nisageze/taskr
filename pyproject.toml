@@ -1,10 +1,10 @@
 [project]
 name = "taskr"
 version = "0.1.0"
-description = "Add your description here"
+description = "taskr is an application that allows you to manage your tasks via the terminal."
 readme = "README.md"
 authors = [
-    { name = "nisqww", email = "116450295+nisageze@users.noreply.github.com." }
+    { name = "nisageze", email = "116450295+nisageze@users.noreply.github.com" }
 ]
 requires-python = ">=3.12"
 dependencies = []
