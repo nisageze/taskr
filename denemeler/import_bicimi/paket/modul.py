@@ -1,2 +1,0 @@
-
-def selam(): print("selam")
