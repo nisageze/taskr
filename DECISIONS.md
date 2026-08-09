@@ -170,8 +170,12 @@ uygulamanın mevcut sürümü 0.1.0 olarak belirledim, sebebi; Semantic Versioni
 
 - Repo düzeni değişimi
 
-Repo içerisinde kullanıcının ihtiyacı olmayan fazla dosyaları kaldırma kararı aldım çünkü projenin okunulabilirliğini olumsuz etkilediğini düşünüyorum. Geçmişte var olması git loglarda gözüktüğü anlamına geliyor, bunu bir problem olarak görmüyorum çünkü öğrenerek ve bazı şeylerde aldığım kararlar zaman içerisinde değiştiğinden bu tarz güncellemelerin geçmişi kirlettiğini değil dosya yapısının da süreç içerisinde değerlendirilip güncellendiği izlenimini verdiğini düşünüyorum. Bundan sonraki süreçlerde de mevcut repo kuralını (kullanıcının işine yaramayacak dosya/klasörler repo dışında kalmalı) devam ettireceğim.
+Repo içerisinde kullanıcının ihtiyacı olmayan ve aldığım kararları barındırmayan dosyaları kaldırma kararı aldım çünkü projenin okunulabilirliğini olumsuz etkilediğini düşünüyorum. Geçmişte var olması git loglarda gözüktüğü anlamına geliyor, bunu bir problem olarak görmüyorum çünkü öğrenerek ve bazı şeylerde aldığım kararlar zaman içerisinde değiştiğinden bu tarz güncellemelerin geçmişi kirlettiğini değil dosya yapısının da süreç içerisinde değerlendirilip güncellendiği izlenimini verdiğini düşünüyorum. Bundan sonraki süreçlerde de mevcut repo kuralını (kararlar repoda, öğrenme süreci repo dışı) devam ettireceğim. Bu kuraldan kaynaklı kaldırdığım notlar ve dosyalar artık versiyonlanmayacak, silersem geri gelmeyecek bunları kabul ediyorum. Kaldırılan dosyalar : denemeler/, SPEC.pdf, NOTES.md
 
 - .gitignore mantığı
 
-kaynak(kod) ve beyanlar repo'ya girer fakat üretilmiş çıktı girmez. pyproject.toml'dan üretebileceğimiz dosyaları bundan kaynaklı repoya koymamıza gerek yok. python-version da beyan olduğundan kaynaklı .gitignore da yer almıyor repo içerisinde mevcut. pyproject.toml ve .python-version dosyaları projeye bağlı olduğundan başka bir kullanıcı klonladığında aynı ortamı kurabilmesi için gerekli.
+kaynak(kod) ve beyanlar repo'ya girer fakat yeniden üretimi deterministik olan çıktı girmez. python-version da beyan olduğundan kaynaklı .gitignore da yer almıyor repo içerisinde mevcut. pyproject.toml ve .python-version dosyaları projeye bağlı olduğundan başka bir kullanıcı klonladığında aynı ortamı kurabilmesi için gerekli. pyproject.toml hangi paketler olduğunu söyler, uv.lock hangi sürümler olduğunu. İkincisi pyproject.toml'dan yeniden üretilebilir ama aynı sonucu vermez, üretim anına ve o anki paket dizinine bağlıdır. Bundan dolayı uv.lock dosyası yeniden üretimi deterministik olmadığı için repoda kalıyor.
+
+- SPEC sapması
+
+SPEC ağacı src/ içermiyor, uv_build varsayılanı gereği kullanıldı. bilinçli sapma.
