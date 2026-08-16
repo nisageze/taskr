@@ -179,3 +179,12 @@ kaynak(kod) ve beyanlar repo'ya girer fakat yeniden üretimi deterministik olan 
 - SPEC sapması
 
 SPEC ağacı src/ içermiyor, uv_build varsayılanı gereği kullanıldı. bilinçli sapma.
+
+16 Ağustos 2026
+
+- Task <-> dict dönüşümü nereye ait?
+
+Task <-> dict dönüşümü storage.py dosyasına aittir (task_to_dict, dict_to_task ve type_conversion yapıyor). Bu kararı almamdaki sebepler; disk ile ilgili her şeyin storage.py da olması hem okunabilirlik açısından hem de disk ile ilgili değişiklik yapmak istediğimizde tek bir dosya üzerinden gerçekleştirebilme imkanı, projenin temel kuralı olan models.py JSON varlığını bilmemeli kuralı.
+Reddedilen alternatif Task sınıfına to_dict() ve from_dict() metotları koymak. yukarıdaki sebeplerden kaynaklı bu yolu seçmedim.
+Bedeli ise veri yapısında bir değişiklik olması dahilinde bu değişikliklerin iki farklı yerde kontrol edilip uygun hale getirilmesi olacaktır, değişiklik tek yerde kalmayacaktır. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
