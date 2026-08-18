@@ -188,3 +188,7 @@ Task <-> dict dönüşümü storage.py dosyasına aittir (task_to_dict, dict_to_
 Reddedilen alternatif Task sınıfına to_dict() ve from_dict() metotları koymak. yukarıdaki sebeplerden kaynaklı bu yolu seçmedim.
 Bedeli ise veri yapısında bir değişiklik olması dahilinde bu değişikliklerin iki farklı yerde kontrol edilip uygun hale getirilmesi olacaktır, değişiklik tek yerde kalmayacaktır. Bu bedeli bilinçli bir şekilde kabul ediyorum.
 
+
+Task to dict transformation belongs to storage.py file (task_to_dict, dict_to_task and type_conversion make this transformation). Behind the reasons why i made this decision; storage.py has everything about disk, this makes more readable and also when i want to change anything about disk, i can make that change from one file. The other reason is project has one rule: models.py shouldn't know anything about JSON.
+The rejected alternative was adding to_dict() and from_dict() methods to Task class. I didn't choose this option because above reasons.
+The price that i pay is; if the data model changes, i have to check and make changes in different file, changes won't be in one file. I am aware of this price and accept it.
