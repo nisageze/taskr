@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
 
+
 class Status(Enum):
     PENDING = "pending"
     DONE = "done"
@@ -26,4 +27,5 @@ class Task:
         if self.due_date is None:
             return False
         else:
-            return self.due_date < date.today()
+            #taskr is a single-user local CLI; overdue status is intentionally evaluated in the user's local timezone.
+            return self.due_date < date.today() # noqa: DTZ011
