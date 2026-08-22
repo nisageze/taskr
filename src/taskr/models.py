@@ -7,10 +7,12 @@ class Status(Enum):
     PENDING = "pending"
     DONE = "done"
 
+
 class Priority(Enum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
+
 
 @dataclass
 class Task:
@@ -22,10 +24,9 @@ class Task:
     status: Status = Status.PENDING
     created_at: datetime = field(default_factory=datetime.now)
 
-
     def is_overdue(self) -> bool:
         if self.due_date is None:
             return False
         else:
-            #taskr is a single-user local CLI; overdue status is intentionally evaluated in the user's local timezone.
-            return self.due_date < date.today() # noqa: DTZ011
+            # taskr is a single-user local CLI; overdue status is intentionally evaluated in the user's local timezone.
+            return self.due_date < date.today()  # noqa: DTZ011
