@@ -28,5 +28,6 @@ class Task:
         if self.due_date is None:
             return False
         else:
-            # taskr is a single-user local CLI; overdue status is intentionally evaluated in the user's local timezone.
+            # taskr is a single-user local CLI;
+            # overdue status is intentionally evaluated in the user's local timezone.
             return self.due_date < date.today()  # noqa: DTZ011

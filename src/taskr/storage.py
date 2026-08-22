@@ -10,19 +10,19 @@ from typing import Any
 from taskr.errors import CorruptStorageError
 from taskr.models import Priority, Status, Task
 
-HOME_FOLDER = Path.home() / ".taskr"
-HOME_FILE = HOME_FOLDER / "tasks.json"
+TASKR_FOLDER = Path.home() / ".taskr"
+TASKR_FILE = TASKR_FOLDER / "tasks.json"
 
 
 def ensure_folder() -> None:
-    HOME_FOLDER.mkdir(parents=True, exist_ok=True)
+    TASKR_FOLDER.mkdir(parents=True, exist_ok=True)
 
 
 def task_to_dict(task: Task) -> dict[str, Any]:
     return asdict(task)
 
 
-def type_conversion(data: Any) -> str:
+def json_serialize(data: Any) -> str:
     if isinstance(data, datetime):
         return data.isoformat()
     if isinstance(data, date):
@@ -38,8 +38,8 @@ def type_conversion(data: Any) -> str:
 def save(tasks: list[Task]) -> None:
     ensure_folder()
     data = [task_to_dict(t) for t in tasks]
-    with open(HOME_FILE, "w", encoding="utf-8") as file:
-        json.dump(data, file, default=type_conversion, indent=2, ensure_ascii=False)
+    with open(TASKR_FILE, "w", encoding="utf-8") as file:
+        json.dump(data, file, default=json_serialize, indent=2, ensure_ascii=False)
 
 
 def dict_to_task(dictionary: dict[str, Any]) -> Task:
@@ -69,11 +69,10 @@ def dict_to_task(dictionary: dict[str, Any]) -> Task:
 
 
 def load() -> list[Task]:
-    if not HOME_FILE.exists():
+    if not TASKR_FILE.exists():
         return []
     try:
-        with open(HOME_FILE, "r", encoding="utf-8") as file:
-            data = [dict_to_task(d) for d in json.load(file)]
-        return data
+        with open(TASKR_FILE, "r", encoding="utf-8") as file:
+            return [dict_to_task(d) for d in json.load(file)]
     except json.JSONDecodeError as e:
-        raise CorruptStorageError(HOME_FILE) from e
+        raise CorruptStorageError(TASKR_FILE) from e
