@@ -196,3 +196,18 @@ The price that i pay is; if the data model changes, i have to check and make cha
 - ruff check extend-select = ["A"] kurallarını ekleme sebebim: proje içerisinde değişken adları, fonksiyon adları ve sınıf adları olası bir isimlendirme hatasında yerleşik isimleri gölgeleyebilir, bu durum hem projenin okunabilirliğini düşürür, hemde ileride sebebi belli olmayan hatalara sebep olabilir.
 Reddedilen alternatif: Varsayılan kural seti ve daha geniş bir set açmak, reddetme sebebim varsayılan kural seti benim kodda kontrol etmek istediğim bulgulara yeterli gelmiyordu aynı eşkilde daha geniş bir kural seti kullanmaya şuan için ihtiyacım bulunmuyor, ileride kontrol etmek istediğim farklı kurallar olursa genişletmeyi arttırabilirim. 
 Bedel: Şuanda ruff check için eklemiş olduğum kural "A" kural sınıfına dahil olan "A003" kuralı gölgeleyen ad sınıf kapsamı içinden referans edilmediği için sessiz kalır, kural tanımının dışında kaldığı için hata vermez, bu ve bunun gibi kural sınırlarını, kontrol edilen ve edilmeyen durumların takibini yapmam gerekmektedir, bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+25 Ağustos
+
+- main() fonksiyonun işlevi: aldığım karar cli.py'ın yapması gerekenleri ayrı fonksiyonlarda yazıp, main() çatısı altında birleştirmek, sebebi ise; kodun test edilebilirliğini, okunabilirliğini arttırmak ve ileride işlevleri geliştirme durumunda tek bir fonkisyon üzerinden yapmam yeterli olacağı için bu kararı aldım, projede çok katmanlı bir iş olmadığı için ayrı fonksiyon yazmanın bu boyutta daha iyi olacağını düşünüyorum. 
+
+Reddettiğim alternatif : tüm işlevleri tek bir main() içerisinde birleştirmek; reddetme sebebim ise kodun test edilebilirliğini, add'i test etmek için argparse'ı da devreye sokmak zorunda kalırım ve okunabilirliğini düşüreceği olması.
+
+Bedel: Bir fonksiyonda hata çıkması halinde ilgili tüm fonksiyonları kontrol etmem gerekiyor, bunu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- main() imzası: main()'in döndürmesi gereken şey çatısı altındaki fonksiyonların başarılı olup olmadığını kabuğa iletmek olacaktır, bu yüzden de imzasının int olması gerekmektedir. komut fonksiyonları kendi işlevlerini yerine getirdikleri (yani çalıştıkları zaman) 0 değerini, başarısız oldularsa da bir hata çıkış kodunu main()'e döndürmelilerdir. main() alt fonksiyonlardan aldığı başarı/başarısızlık değerlerini kabuğa gönderir ve artık o değerle ne yapılacağına kabuk karar verir
+
+Reddedilen alternatif: main()'in hiçbir şey döndürmeyip sonlandırmayı kendi yapması; 
+
+Bedel 0-255 olan byte sınırının aşılıp aşılmaması kontrolünü yapmak olacaktır.
+
