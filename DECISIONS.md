@@ -45,6 +45,8 @@ Bundan dolayı hatalı girişler olabilir. Literal düz metin olduğundan ve den
 
     **[4 Ağustos revizyonu]** Yukarıda "girdisi due_date ve status" yazıyor, ancak 4 Ağustos'ta yazılan is_overdue metodu status'e bakmıyor. Status'ün hesaba girip girmeyeceği açık soruya dönüştü — bkz. 4 Ağustos, "status gecikme hesabına giriyor mu?". Kararın verildiği tarihteki hâli bilerek korundu.
 
+26 Ağustos'ta kapandı, bkz. o günün girdisi.
+
 - Task mutable (frozen=FALSE)
 
     Gerekçe : done komutu status ve completed_at'i birlikte değiştirecek Frozen olsaydı her değişiklikte yeni nesne üretmek gerekirdi.
@@ -130,9 +132,10 @@ completed_at değeri kullanıcının done değeri girdiğinde belirlenen bir ver
 
 due_date kullanıcı tarafından girilen bir veri olduğundan kaynaklı sadece tarih olması fikri daha mantıklıdır, çünkü bir görevin kesin bitiş tarihi beklentisi olabilir fakat saat gürültü yaratacak bir detaydır. created_at ve completed_at ise program tarafından belirlenen tarihlerdir. bu verilerde saat verisi önemli rol oynamaktadır. iki farklı veri tipi seçimi bundan kaynaklı bilinçlidir. İki farklı veri tipi olmasından kaynaklanan veri uyumsuzluğunu ise Hafta 3'te storage.py üzerinde tek bir formata dönüştürerek çözümleyeceğim.
 
-- status gecikme hesabına giriyor mu? — **AÇIK SORU**
+- status gecikme hesabına giriyor mu? 
 
 Tamamlanmış fakat tarihi geçmiş bir görev list çıktısında gecikmiş olarak işaretlenmeli mi? Geciken sayısı neyi ölçmeli? soruları şuan için cevaplanması erken olan sorular olduğundan kaynaklı Hafta 5'te stats yazılırken kapanacak.
+26 Ağustos'ta kapandı, bkz. o günün girdisi.
 
 - Hata sınıfları neden somut değeri ayrıca bir alanda tutuyor? İsimlendirme kuralın ne?
 
@@ -201,13 +204,26 @@ Bedel: Şuanda ruff check için eklemiş olduğum kural "A" kural sınıfına da
 
 - main() fonksiyonun işlevi: aldığım karar cli.py'ın yapması gerekenleri ayrı fonksiyonlarda yazıp, main() çatısı altında birleştirmek, sebebi ise; kodun test edilebilirliğini, okunabilirliğini arttırmak ve ileride işlevleri geliştirme durumunda tek bir fonkisyon üzerinden yapmam yeterli olacağı için bu kararı aldım, projede çok katmanlı bir iş olmadığı için ayrı fonksiyon yazmanın bu boyutta daha iyi olacağını düşünüyorum. 
 
-Reddettiğim alternatif : tüm işlevleri tek bir main() içerisinde birleştirmek; reddetme sebebim ise kodun test edilebilirliğini, add'i test etmek için argparse'ı da devreye sokmak zorunda kalırım ve okunabilirliğini düşüreceği olması.
+Reddettiğim alternatif : tüm işlevleri tek bir main() içerisinde birleştirmek; reddetme sebebim ise kodun test edilebilirliğini( add'i test etmek için argparse'ı da devreye sokmak zorunda kalırım )ve okunabilirliğini düşüreceği olması.
 
-Bedel: Bir fonksiyonda hata çıkması halinde ilgili tüm fonksiyonları kontrol etmem gerekiyor, bunu bedeli bilinçli bir şekilde kabul ediyorum.
+Bedel: Bir fonksiyonda hata çıkması halinde ilgili tüm fonksiyonları kontrol etmem gerekiyor,bu ekstra iş bedelini bilinçli bir şekilde kabul ediyorum.
 
 - main() imzası: main()'in döndürmesi gereken şey çatısı altındaki fonksiyonların başarılı olup olmadığını kabuğa iletmek olacaktır, bu yüzden de imzasının int olması gerekmektedir. komut fonksiyonları kendi işlevlerini yerine getirdikleri (yani çalıştıkları zaman) 0 değerini, başarısız oldularsa da bir hata çıkış kodunu main()'e döndürmelilerdir. main() alt fonksiyonlardan aldığı başarı/başarısızlık değerlerini kabuğa gönderir ve artık o değerle ne yapılacağına kabuk karar verir
 
 Reddedilen alternatif: main()'in hiçbir şey döndürmeyip sonlandırmayı kendi yapması; 
 
 Bedel 0-255 olan byte sınırının aşılıp aşılmaması kontrolünü yapmak olacaktır.
+
+26 Ağustos
+
+- Doğrulama argparse dışında, InvalidDateError kalıyor. Bu kararı alırken ölçülen 3 tip var; ValueError, mesajı yutuyor, ArgumentTypeError, SPEC metnini geçiriyor, InvalidDateError, traceback üretiyor.
+Bu karar alınırken alınan diğer bir alt karar ise type= fonksiyonunun .date() ile daraltılmış değer döndürmesi
+Gerekçe: alan tipi date, datetime alt sınıfı olduğu için mypy fark etmez, fark storage.py'da isoformat() saat ekiyle çıkar. try bloğu dar tutuluyor içerisinde sadece strptime var.
+Reddedilen Alternatif: ArgumentTypeError; ArgumentTypeError metni ve çıkış kodunu otomatik geçiriyor, ben bu projeyi öğrenme amaçlı yapıyorum aynı sonucu kendim üretecek olsamda, aslında teknik olarak daha iyi olan seçeneği öğrenme amacı sebebiyle reddediyorum.
+Bedel: Çıkış kodunu ve metnini ben üreteceğim, öğrenme önceliğim olduğu için bu bedeli bilinçli bir şekilde kabul ediyorum. 
+- Tamamlanmış görev gecikme sayılmaz, is_overdue status'e bakar, list ve stats tek metot. stats görev listesinin bugünkü durumunu ölçüyor, geçmiş performansı değil, biz hala açık olup geciken işleri listeliyoruz aslında stats da, herhangi bir bitmiş görevin durumuna bakmıyoruz. Projenin bizden beklediği stats çıktısına göre alınmış bir karar (SPEC 3.4)
+Reddedilen alternatif: Hem tamamlanmış görevlerde hemde tamamlanmamış görevlerde gecikme hesabı yapmak, şuanda projenin benden böyle bir beklentisi olmadığı için reddettim.
+Bedel: Geç tamamlanan görevler projenin ilk versiyonunda çıktıya sahip değil. Kullanıcı tamamlamış ve gecikmiş olduğu görevlerin verisini göremiyor. Geçmiş görevlerin durumunu görmek istersek elimizdeki completed_at ve due_date verilerinden görebiliriz, istersek ilerleyen süreçlerde hesaplayabiliriz. Bu ek iş bedelini bilinçli bir şekilde kabul ediyorum 
+
+Bu kararla birlikte 1 Ağustos ve 4 Ağustos'ta açık kalan sorular bugün kapandı.
 
