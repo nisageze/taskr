@@ -3,7 +3,7 @@ from datetime import date, datetime
 
 from taskr.errors import InvalidDateError
 from taskr.models import Task
-from taskr.storage import load
+from taskr.storage import load, save
 
 
 def main() -> int:
@@ -32,6 +32,18 @@ def date_format_check(d: str) -> date:
     except ValueError as e:
         raise InvalidDateError(f"Error: Invalid date format. {d}") from e
 
-def add_func() -> list[Task]:
+def add_func() -> None:
     task_list = load()
-    return task_list
+
+    max_id = 0
+    if not task_list: new_id = 1
+    else:
+        for task in task_list:
+            max_id = max(max_id, task.id)
+        new_id = max_id + 1
+
+    new_title = 'Read Book' #TODO : The title is fixed; the value doesn't come from the user and will change when the dispatch is called.
+
+    new_task = Task(id=new_id, title=new_title)
+    task_list.append(new_task)
+    save(task_list)
