@@ -200,6 +200,23 @@ The price that i pay is; if the data model changes, i have to check and make cha
 Reddedilen alternatif: Varsayılan kural seti ve daha geniş bir set açmak, reddetme sebebim varsayılan kural seti benim kodda kontrol etmek istediğim bulgulara yeterli gelmiyordu aynı eşkilde daha geniş bir kural seti kullanmaya şuan için ihtiyacım bulunmuyor, ileride kontrol etmek istediğim farklı kurallar olursa genişletmeyi arttırabilirim. 
 Bedel: Şuanda ruff check için eklemiş olduğum kural "A" kural sınıfına dahil olan "A003" kuralı gölgeleyen ad sınıf kapsamı içinden referans edilmediği için sessiz kalır, kural tanımının dışında kaldığı için hata vermez, bu ve bunun gibi kural sınırlarını, kontrol edilen ve edilmeyen durumların takibini yapmam gerekmektedir, bu bedeli bilinçli bir şekilde kabul ediyorum.
 
+20 Ağustos
+
+- isinstance() içerisinde str kontrolü yapmak. Bu kararı almamdaki sebep Enum filtresini korumak, veri sınırını kodda görünür bırakmak.
+
+Reddedilen Alternatif: models.py dosyasında StrEnum kullanarak tip değişikliği yapmak; hem enum seçmemdeki asıl karara ters ve enum anlamını kaybeder hem de dosyada veri sınırlarını gizler.
+
+Bedel: Fonksiyon uzayacak hem de belki de hiç kullanılmayacak bir kontrol eklemiş olacağım fakat kodun çalışma esnasında bu kontrolü yapması fikrini daha mantıklı bulduğum için bilinçli bir şekilde bu bedeli kabul ediyorum.
+
+- "Bugün" tanımı hangi saat dilimine göre yapılacak, ve ruff'ın uyarısı nasıl kapatılacak?
+
+Alınan Karar: Saat dilimi olarak kullanıcının yerel zaman dilimini kullanmak ve ruff uyarısı için noqa kullanmak.
+
+Reddedilen Alternatif: UTC'ye geçmek, pyproject.toml'da proje geneli ignore tz=None yazımı. Projede ignore kullanmak, bu kontrolü tüm projede kapatır ve olası gerçek bir hatalı yazımda o da görünmez olur. UTC reddetme sebebim ise tek kullanıcılı o yüzden yerel takvimi baz almak daha doğru olur.
+
+Bedel: Ignore kullanmayı reddettiğim için projenin akışına uygun olmayan kontrolleri sustururken, bilinçli sebepler seçip bu susturmaları takip etmek benim sorumluluğumda.
+
+
 25 Ağustos
 
 - main() fonksiyonun işlevi: aldığım karar cli.py'ın yapması gerekenleri ayrı fonksiyonlarda yazıp, main() çatısı altında birleştirmek, sebebi ise; kodun test edilebilirliğini, okunabilirliğini arttırmak ve ileride işlevleri geliştirme durumunda tek bir fonkisyon üzerinden yapmam yeterli olacağı için bu kararı aldım, projede çok katmanlı bir iş olmadığı için ayrı fonksiyon yazmanın bu boyutta daha iyi olacağını düşünüyorum. 
@@ -221,14 +238,44 @@ Bu karar alınırken alınan diğer bir alt karar ise type= fonksiyonunun .date(
 Gerekçe: alan tipi date, datetime alt sınıfı olduğu için mypy fark etmez, fark storage.py'da isoformat() saat ekiyle çıkar. try bloğu dar tutuluyor içerisinde sadece strptime var.
 Reddedilen Alternatif: ArgumentTypeError; ArgumentTypeError metni ve çıkış kodunu otomatik geçiriyor, ben bu projeyi öğrenme amaçlı yapıyorum aynı sonucu kendim üretecek olsamda, aslında teknik olarak daha iyi olan seçeneği öğrenme amacı sebebiyle reddediyorum.
 Bedel: Çıkış kodunu ve metnini ben üreteceğim, öğrenme önceliğim olduğu için bu bedeli bilinçli bir şekilde kabul ediyorum. 
+
 - Tamamlanmış görev gecikme sayılmaz, is_overdue status'e bakar, list ve stats tek metot. stats görev listesinin bugünkü durumunu ölçüyor, geçmiş performansı değil, biz hala açık olup geciken işleri listeliyoruz aslında stats da, herhangi bir bitmiş görevin durumuna bakmıyoruz. Projenin bizden beklediği stats çıktısına göre alınmış bir karar (SPEC 3.4)
 Reddedilen alternatif: Hem tamamlanmış görevlerde hemde tamamlanmamış görevlerde gecikme hesabı yapmak, şuanda projenin benden böyle bir beklentisi olmadığı için reddettim.
 Bedel: Geç tamamlanan görevler projenin ilk versiyonunda çıktıya sahip değil. Kullanıcı tamamlamış ve gecikmiş olduğu görevlerin verisini göremiyor. Geçmiş görevlerin durumunu görmek istersek elimizdeki completed_at ve due_date verilerinden görebiliriz, istersek ilerleyen süreçlerde hesaplayabiliriz. Bu ek iş bedelini bilinçli bir şekilde kabul ediyorum 
 
 Bu kararla birlikte 1 Ağustos ve 4 Ağustos'ta açık kalan sorular bugün kapandı.
 
+27 Ağustos
 
-28 Ağustos
+- Kullanıcı taskr yazıp hiçbir komut vermediğinde ne olacak?
+
+Alınan Karar: Komut kontrolünün ve komut verilmediği takdirde çıkacak olan hata mesajı ve kodunun benim tarafımdan belirlenmesi ve main() içerisinde yakalanması.
+
+Reddedilen Alternatif: add_subparsers() çağrısının kendi parametreleri. Teknik olarak daha iyi ve mantıklı olsa da bu projeyi ben öğrenmek için yapıyorum ve bu tarz hatalar nasıl yakalanır, nasıl döndürülür öğrenmek istediğim için bu yolu reddettim.
+
+Bedel: Hata yakalama, çıktı mesajı ve kodu üretmek ekstra iş ve kod kalabalığı demek fakat öğrenme önceliğinden kaynaklı bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+Şu an durumu: taskr tek başına çağrıldığında sessizce 0 dönüyor. Henüz kodda uygulanmadı.
+
+- Yeni görev id'si üretme ve id kullanımının tekrarlanmaması için kontrolün nasıl yapılacağı
+
+Alınan Karar: liste boşsa 1, doluysa mevcut en büyük id + 1 olması
+
+Reddedilen Alternatif: En küçük boş numarayı vermek. Yeni atanan bir görev, silinen görevin numarasını alabilir, yani kullanılmış bir numara tekrar kullanılır. Projede bir görevde kullanılan bir görev numarasının tekrar kullanılması yasak.
+Tamamlanmış ve aktif olan görevlere ayrı numara dizisi vermek. Bir görevin id'si değişirse görev durumunu değiştirmek istediğimiz zaman kimlik durumunda karışıklık olacağından hatalara sebep olabilir.
+
+Bedel: Şuanda seçtiğim yol nadirde olsa reddettiğim seçenek ile aynı açığı, görev numarasını birden fazla kez kullanma riskini taşıyor. rm yazıldığı gün; ayrı dosyada sayaç tutmak (iki doğruluk kaynağı), tasks.json yapısını değiştirmek (save/load imzaları değişir, mevcut dosya okunmaz), silinen kaydı işaretleyip tutmak (list ve stats filtrelemek zorunda) bu üç yoldan birini seçmem gerekecek.
+
+- strptime satırındaki ruff uyarısı nasıl kapatılacak
+
+Alınan karar: date_format_check içerisinde kullanılan datetime.strptime(d, "%Y-%m-%d") satırında zaman dilimi olmadığı için ruff DTZ007 hatası veriyordu, bu hatada da zaman dilimi hatasını noqa kullanarak susturma kararı aldım.
+
+Reddedilen Alternatif: Saat dilimi eklemek. Reddetme sebebim kullanıcı bir tarih girdiği zaman bir an girmiş olmuyor o yüzden bu bilgiye zaman dilimi eklemek olmayan bir bilgi eklemek olur. 
+Ignore kullanmayı proje kapsamında reddetmiştim.
+
+Bedel: DTZ011 bedeli ile aynıdır. Ek olarak ileride strptime satırı değişirse ve gerçekten saat dilimi gerektiren bir hale gelirse uyarı gelmeyecek.
+
+29 Ağustos
 
 - opsiyonel bir argümanın varsayılan değerinin nerede tanımlanacağı
 
