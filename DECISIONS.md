@@ -227,3 +227,16 @@ Bedel: Geç tamamlanan görevler projenin ilk versiyonunda çıktıya sahip değ
 
 Bu kararla birlikte 1 Ağustos ve 4 Ağustos'ta açık kalan sorular bugün kapandı.
 
+
+28 Ağustos
+
+- opsiyonel bir argümanın varsayılan değerinin nerede tanımlanacağı
+
+Seçilen karar :cli.py'da varsayılan değer ataması yapılmıyor, dataclass'ın varsayılan priority alanı korunuyor. --priority verilmediğinde Task yapıcısına priority alanı hiç verilmiyor, models.py'daki dataclass kendi varsayılan değerini atıyor. Varsayılan değer yalnızca models.py'da bulunuyor.
+
+Reddedilen Alternatif: Sözlük kurup açarak geçmek. Argümanları önce bir sözlükte toplayıp, priority anahtarını yalnızca değer geldiyse koyarsın, sonra sözlüğü tek seferde çağrıya açarsın.Sözlüğü açarak geçtiğinde sözlüğün tipi dict[str, Any] olur ve --strict yapıcı çağrısında hiçbir şey denetlemez. dict_to_task bu yapıda olmak zorunda çünkü girdisi gerçekten diskten geliyor. add_func'ın girdisi diskten gelmiyor, o yüzden kontrol edilmesi gerektiğinden bu yolu kullanmayı tercih etmedim. Diğer reddedilen alternatif gövdede None görülünce models.py'daki varsayılan değer ile değiştirmek. Varsayılan değer atamanın iki farklı dosyada bulunmasının gereksiz olması. 
+
+Bedel: Task ileride frozen yapılırsa, çalışmaz ve yolun değiştirilmesi gerekir.
+Birden fazla opsiyonel alanda if zinciri uzar ve bu da okunabilirliği düşürür.
+
+Kod henüz yazılmadı, dispatch ile beraber gelecek.
