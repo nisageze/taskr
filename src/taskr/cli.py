@@ -7,24 +7,32 @@ from taskr.storage import load, save
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(prog='taskr', description='task list program')
+    parser = argparse.ArgumentParser(prog="taskr", description="task managing program")
 
-    subparsers = parser.add_subparsers(help='subcommand help')
+    subparsers = parser.add_subparsers(help="choose one command")
 
-    add_arg = subparsers.add_parser('add', help='add tasks')
+    add_arg = subparsers.add_parser("add", help="add tasks")
     add_arg.set_defaults(func=add_func)
-    add_arg.add_argument('title', help='task title')
-    add_arg.add_argument('--due', help='due date for task', type=date_format_check)
-    add_arg.add_argument('--priority', help='HIGH, MEDIUM, LOW priority', choices=['high', 'medium', 'low'])
+    add_arg.add_argument("title", help="task title")
+    add_arg.add_argument("--due", help="due date for task", type=date_format_check)
+    add_arg.add_argument("--priority", help="high, medium, low priority", choices=["high", "medium", "low"])
 
-    subparsers.add_parser('list', help='list tasks')
-    subparsers.add_parser('done', help='done task')
-    subparsers.add_parser('rm', help='deleting task')
-    subparsers.add_parser('stats', help='list stats')
+    subparsers.add_parser("list", help="list tasks")
+    subparsers.add_parser("done", help="mark a task as done")
+    subparsers.add_parser("rm", help="remove task")
+    subparsers.add_parser("stats", help="list stats")
 
-    parser.parse_args()
+    args = parser.parse_args()
 
-    return 0
+    if not hasattr(args, "func"):
+        parser.print_help()
+        return 1
+
+    # TODO: mypy no-any-return — args.func is Any because Namespace has no
+    # declared fields. Decision deferred to the block where --due and --priority
+    # are bound; both hit the same Any boundary.
+
+    return args.func(args)
 
 def date_format_check(d: str) -> date:
     try:
@@ -32,18 +40,21 @@ def date_format_check(d: str) -> date:
     except ValueError as e:
         raise InvalidDateError(f"Error: Invalid date format. {d}") from e
 
-def add_func() -> None:
+def add_func(args: argparse.Namespace) -> int:
     task_list = load()
 
     max_id = 0
-    if not task_list: new_id = 1
+    if not task_list:
+        new_id = 1
     else:
         for task in task_list:
             max_id = max(max_id, task.id)
         new_id = max_id + 1
 
-    new_title = 'Read Book' #TODO : The title is fixed; the value doesn't come from the user and will change when the dispatch is called.
+    new_title = "Read Book" #TODO : The title is fixed; the value doesn't come from the user and will change when the dispatch is called.
 
     new_task = Task(id=new_id, title=new_title)
     task_list.append(new_task)
     save(task_list)
+
+    return 0
