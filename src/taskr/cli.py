@@ -1,7 +1,8 @@
 import argparse
+import sys
 from datetime import date, datetime
 
-from taskr.errors import InvalidDateError
+from taskr.errors import InvalidDateError, TaskrError
 from taskr.models import Task
 from taskr.storage import load, save
 
@@ -22,23 +23,27 @@ def main() -> int:
     subparsers.add_parser("rm", help="remove task")
     subparsers.add_parser("stats", help="list stats")
 
-    args = parser.parse_args()
+    try:
+        args = parser.parse_args()
 
-    if not hasattr(args, "func"):
-        parser.print_help()
+        if not hasattr(args, "func"):
+            parser.print_help()
+            return 1
+
+        # TODO: mypy no-any-return — args.func is Any because Namespace has no
+        # declared fields. Decision deferred to the block where --due and --priority
+        # are bound; both hit the same Any boundary.
+
+        return args.func(args)
+    except TaskrError as e:
+        print(f"Error: {e}", file=sys.stderr)
         return 1
-
-    # TODO: mypy no-any-return — args.func is Any because Namespace has no
-    # declared fields. Decision deferred to the block where --due and --priority
-    # are bound; both hit the same Any boundary.
-
-    return args.func(args)
 
 def date_format_check(d: str) -> date:
     try:
         return datetime.strptime(d, "%Y-%m-%d").date() # noqa: DTZ007
     except ValueError as e:
-        raise InvalidDateError(f"Error: Invalid date format. {d}") from e
+        raise InvalidDateError(d) from e
 
 def add_func(args: argparse.Namespace) -> int:
     task_list = load()
@@ -51,9 +56,12 @@ def add_func(args: argparse.Namespace) -> int:
             max_id = max(max_id, task.id)
         new_id = max_id + 1
 
-    new_title = "Read Book" #TODO : The title is fixed; the value doesn't come from the user and will change when the dispatch is called.
+    if args.priority is None:
+        new_task = Task(id=new_id, title=args.title,  due_date=args.due)
+    else:
+        new_task = Task(id=new_id, title=args.title, priority=args.priority, due_date=args.due)
 
-    new_task = Task(id=new_id, title=new_title)
+
     task_list.append(new_task)
     save(task_list)
 
