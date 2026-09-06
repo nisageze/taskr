@@ -1,5 +1,6 @@
 import argparse
 import sys
+from collections.abc import Callable
 from datetime import date, datetime
 
 from taskr.errors import InvalidDateError, TaskrError
@@ -31,11 +32,10 @@ def main() -> int:
             parser.print_help()
             return 1
 
-        # TODO: mypy no-any-return — args.func is Any because Namespace has no
-        # declared fields. Decision deferred to the block where --due and --priority
-        # are bound; both hit the same Any boundary.
+        handler: Callable[[argparse.Namespace], None] = args.func
+        handler(args)
+        return 0
 
-        return args.func(args)
     except TaskrError as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1
@@ -46,7 +46,7 @@ def date_format_check(d: str) -> date:
     except ValueError as e:
         raise InvalidDateError(d) from e
 
-def add_func(args: argparse.Namespace) -> int:
+def add_func(args: argparse.Namespace) -> None:
     task_list = load()
 
     max_id = 0
@@ -66,15 +66,14 @@ def add_func(args: argparse.Namespace) -> int:
     task_list.append(new_task)
     save(task_list)
 
-    return 0
 
 
-def list_func(args: argparse.Namespace) -> int:
+def list_func(args: argparse.Namespace) -> None:
     task_list = load()
 
     if not task_list:
         print("No tasks yet.")
-        return 0
+        return
 
     print(f"{"ID":<3}{"PRIORITY":<9}{"STATUS":<8}{"DUE":<12}{"TITLE"}")
     print(f"{"--":<3}{"--------":<9}{"-------":<8}{"-----------":<12}{"-----------------------"}")
@@ -84,5 +83,3 @@ def list_func(args: argparse.Namespace) -> int:
         mark = "! " if task.is_overdue() else ""
 
         print(f"{task.id:<3}{task.priority.value:<9}{task.status.value:<8}{due_date:<12}{mark}{task.title}")
-
-    return 0
