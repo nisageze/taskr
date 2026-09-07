@@ -294,3 +294,11 @@ Kod henüz yazılmadı, dispatch ile beraber gelecek.
 Sebep: Şu anda fonksiyonlar sadece 0 çıkış kodunu döndürüyorlar, hiçbir koşulda 1 (hata) kodunu döndürmüyorlar, daha öncesinde TaskrError hatasının tek hata yolu olmasını seçmiştim bu kararıma uygun olması ve ayrıca Callable ile birlikte tüm komutların aynı imzayla yazılması gerekmektedir, aksi takdirde mypy hata verir. 
 Reddedilen Alternatif: Fonksiyonların kendi çıkış kodlarını döndürmesi, hata bildirimi için iki farklı yer oluyordu (hem fonksiyonlar, hem main), aynı işi iki farklı mekanizmanın yapması ilerleyen süreçlerde çelişebilir. Şu anda mevcut kodda bu kanal çalışmıyordu çünkü iki fonksiyonda her koşulda 0 döndürüyordu. cast ve type: ignore opsiyonları ise hatayı susturuyordu, yanlış imzalı bir fonksiyonun sessizce geçmesi anlamına geldiğinden reddettim
 Bedel: Bir komutun TaskrError fırlatmadan sonucu boş olması gerektiği bir durumda (görevleri listelerken öncelik ve görev durumu filtreleri eklediğimizde filtreye uygun görev yoksa hata değildir, sadece çıktı boştur) çıkış kodunu (1) gene fonksiyon üzerinden göndermemiz gerekir ve çıktının kontrolünü yapmamız gerekir.  
+
+7 Eylül
+
+- Aynı id iki kez kullanılmamalı, kodun şuanki yapısında son eleman silinince aynı numara kullanılıyor. kullanılan en büyük id bilgisini nerede tutacağım? 
+Aldığım karar: tasks.json dosyasının içerisinde olmasını seçtim. Çünkü görev silme ve sayaç güncelleme aynı anda olması gereken iki şeydir, aynı yazma işleminde olmazsa arada çökme olabilir.
+Reddettiğim alternatif: farklı dosyada sayaç kullanarak tek bir sayı tutma fikrinde olası sayaç dosyasının bozulması senaryosunda id bilgileri kaybolacağı için id bilgisini tekrardan hesaplama yapılamaz ve aynı sayının kullanılma ihtimali vardır. 
+Bedel: tasks.json dosyası artık düz bir görev listesi değil, içerisinde sayaç olan bir yapı. Bu durumdan kaynaklı halihazırda tasks.json dosyasından görevleri okuyan fonksiyonda düzenlemeler yapılması gerekmektedir. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+Hafta9'da SQLite'a geçilene kadar bu probleme bulunmuş geçici bir çözümdür, veri tabanı bu işi zaten yapacaktır.
