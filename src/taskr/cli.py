@@ -47,13 +47,13 @@ def date_format_check(d: str) -> date:
         raise InvalidDateError(d) from e
 
 def add_func(args: argparse.Namespace) -> None:
-    task_list = load()
+    task_data = load()
 
     max_id = 0
-    if not task_list:
+    if not task_data.tasks:
         new_id = 1
     else:
-        for task in task_list:
+        for task in task_data.tasks:
             max_id = max(max_id, task.id)
         new_id = max_id + 1
 
@@ -63,22 +63,22 @@ def add_func(args: argparse.Namespace) -> None:
         new_task = Task(id=new_id, title=args.title, priority=args.priority, due_date=args.due)
 
 
-    task_list.append(new_task)
-    save(task_list)
+    task_data.tasks.append(new_task)
+    save(task_data)
 
 
 
 def list_func(args: argparse.Namespace) -> None:
-    task_list = load()
+    task_data = load()
 
-    if not task_list:
+    if not task_data.tasks:
         print("No tasks yet.")
         return
 
     print(f"{"ID":<3}{"PRIORITY":<9}{"STATUS":<8}{"DUE":<12}{"TITLE"}")
     print(f"{"--":<3}{"--------":<9}{"-------":<8}{"-----------":<12}{"-----------------------"}")
 
-    for task in task_list:
+    for task in task_data.tasks:
         due_date = task.due_date.isoformat() if task.due_date is not None else "-"
         mark = "! " if task.is_overdue() else ""
 

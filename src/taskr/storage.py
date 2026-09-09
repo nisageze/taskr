@@ -1,7 +1,7 @@
 """The purpose of storage.py is to handle disk read and write operations for the tasks entered by the user."""
 
 import json
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from datetime import date, datetime
 from enum import Enum
 from pathlib import Path
@@ -13,6 +13,10 @@ from taskr.models import Priority, Status, Task
 TASKR_FOLDER = Path.home() / ".taskr"
 TASKR_FILE = TASKR_FOLDER / "tasks.json"
 
+@dataclass
+class TaskData:
+    tasks: list[Task]
+    last_id: int
 
 def ensure_folder(taskr_file: Path = TASKR_FILE) -> None:
     taskr_file.parent.mkdir(parents=True, exist_ok=True)
@@ -35,11 +39,13 @@ def json_serialize(data: Any) -> str:
     raise TypeError(f"Object of type {type(data).__name__} is not JSON serializable")
 
 
-def save(tasks: list[Task], taskr_file: Path = TASKR_FILE) -> None:
+def save(data: TaskData, taskr_file: Path = TASKR_FILE) -> None:
     ensure_folder(taskr_file)
-    data = [task_to_dict(t) for t in tasks]
+    tasks_data = [task_to_dict(t) for t in data.tasks]
+    id_data = data.last_id
+    tasks_dict = {"tasks": tasks_data, "last_id": id_data}
     with open(taskr_file, "w", encoding="utf-8") as file:
-        json.dump(data, file, default=json_serialize, indent=2, ensure_ascii=False)
+        json.dump(task_data, file, default=json_serialize, indent=2, ensure_ascii=False)
 
 
 def dict_to_task(dictionary: dict[str, Any]) -> Task:
@@ -68,11 +74,13 @@ def dict_to_task(dictionary: dict[str, Any]) -> Task:
     )
 
 
-def load(taskr_file: Path = TASKR_FILE) -> list[Task]:
+def load(taskr_file: Path = TASKR_FILE) -> TaskData:
     if not taskr_file.exists():
-        return []
+        return TaskData([], 0)
     try:
         with open(taskr_file, "r", encoding="utf-8") as file:
-            return [dict_to_task(d) for d in json.load(file)]
+            data = json.load(file)
     except json.JSONDecodeError as e:
         raise CorruptStorageError(taskr_file) from e
+    task_data = [dict_to_task(d) for d in data["tasks"]]
+    return TaskData(task_data, data["last_id"])
