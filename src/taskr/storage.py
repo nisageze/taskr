@@ -14,8 +14,8 @@ TASKR_FOLDER = Path.home() / ".taskr"
 TASKR_FILE = TASKR_FOLDER / "tasks.json"
 
 
-def ensure_folder() -> None:
-    TASKR_FOLDER.mkdir(parents=True, exist_ok=True)
+def ensure_folder(taskr_file: Path = TASKR_FILE) -> None:
+    taskr_file.parent.mkdir(parents=True, exist_ok=True)
 
 
 def task_to_dict(task: Task) -> dict[str, Any]:
@@ -35,10 +35,10 @@ def json_serialize(data: Any) -> str:
     raise TypeError(f"Object of type {type(data).__name__} is not JSON serializable")
 
 
-def save(tasks: list[Task]) -> None:
-    ensure_folder()
+def save(tasks: list[Task], taskr_file: Path = TASKR_FILE) -> None:
+    ensure_folder(taskr_file)
     data = [task_to_dict(t) for t in tasks]
-    with open(TASKR_FILE, "w", encoding="utf-8") as file:
+    with open(taskr_file, "w", encoding="utf-8") as file:
         json.dump(data, file, default=json_serialize, indent=2, ensure_ascii=False)
 
 
@@ -68,11 +68,11 @@ def dict_to_task(dictionary: dict[str, Any]) -> Task:
     )
 
 
-def load() -> list[Task]:
-    if not TASKR_FILE.exists():
+def load(taskr_file: Path = TASKR_FILE) -> list[Task]:
+    if not taskr_file.exists():
         return []
     try:
-        with open(TASKR_FILE, "r", encoding="utf-8") as file:
+        with open(taskr_file, "r", encoding="utf-8") as file:
             return [dict_to_task(d) for d in json.load(file)]
     except json.JSONDecodeError as e:
-        raise CorruptStorageError(TASKR_FILE) from e
+        raise CorruptStorageError(taskr_file) from e
