@@ -2,6 +2,8 @@ from dataclasses import dataclass, field
 from datetime import date, datetime
 from enum import Enum
 
+from taskr.errors import TaskNotFoundError
+
 
 class Status(Enum):
     PENDING = "pending"
@@ -31,3 +33,15 @@ class Task:
             # taskr is a single-user local CLI;
             # overdue status is intentionally evaluated in the user's local timezone.
             return self.due_date < date.today()  # noqa: DTZ011
+
+    def mark_done(self) -> None:
+        self.status = Status.DONE
+        self.completed_at = datetime.now() # noqa: DTZ005
+
+
+
+def find_task(tasks:list[Task], task_id: int) -> Task:
+    for task in tasks:
+        if task.id == task_id:
+            return task
+    raise TaskNotFoundError(task_id)
