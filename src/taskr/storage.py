@@ -45,7 +45,7 @@ def save(data: TaskData, taskr_file: Path = TASKR_FILE) -> None:
     id_data = data.last_id
     tasks_dict = {"tasks": tasks_data, "last_id": id_data}
     with open(taskr_file, "w", encoding="utf-8") as file:
-        json.dump(task_data, file, default=json_serialize, indent=2, ensure_ascii=False)
+        json.dump(tasks_dict, file, default=json_serialize, indent=2, ensure_ascii=False)
 
 
 def dict_to_task(dictionary: dict[str, Any]) -> Task:
