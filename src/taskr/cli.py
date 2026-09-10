@@ -4,7 +4,7 @@ from collections.abc import Callable
 from datetime import date, datetime
 
 from taskr.errors import InvalidDateError, TaskrError
-from taskr.models import Task
+from taskr.models import Status, Task, find_task
 from taskr.storage import load, save
 
 
@@ -21,8 +21,15 @@ def main() -> int:
 
     list_arg = subparsers.add_parser("list", help="list tasks")
     list_arg.set_defaults(func=list_func)
-    subparsers.add_parser("done", help="mark a task as done")
-    subparsers.add_parser("rm", help="remove task")
+
+    done_arg = subparsers.add_parser("done", help="mark a task as done")
+    done_arg.set_defaults(func=done_func)
+    done_arg.add_argument("id", help="task id", type=int)
+
+    rm_arg = subparsers.add_parser("rm", help="remove task")
+    rm_arg.set_defaults(func=rm_func)
+    rm_arg.add_argument("id", help="task id", type=int)
+
     subparsers.add_parser("stats", help="list stats")
 
     try:
@@ -49,13 +56,8 @@ def date_format_check(d: str) -> date:
 def add_func(args: argparse.Namespace) -> None:
     task_data = load()
 
-    max_id = 0
-    if not task_data.tasks:
-        new_id = 1
-    else:
-        for task in task_data.tasks:
-            max_id = max(max_id, task.id)
-        new_id = max_id + 1
+    new_id = task_data.last_id + 1
+    task_data.last_id = new_id
 
     if args.priority is None:
         new_task = Task(id=new_id, title=args.title,  due_date=args.due)
@@ -65,6 +67,7 @@ def add_func(args: argparse.Namespace) -> None:
 
     task_data.tasks.append(new_task)
     save(task_data)
+    print(f"Task {new_task.id} added.")
 
 
 
@@ -83,3 +86,22 @@ def list_func(args: argparse.Namespace) -> None:
         mark = "! " if task.is_overdue() else ""
 
         print(f"{task.id:<3}{task.priority.value:<9}{task.status.value:<8}{due_date:<12}{mark}{task.title}")
+
+def done_func(args: argparse.Namespace) -> None:
+    task_data = load()
+    task = find_task(task_data.tasks, args.id)
+
+    if task.status == Status.DONE:
+        print(f"Task {task.id} is already completed.")
+    else:
+        task.mark_done()
+        save(task_data)
+        print(f"Task {task.id} completed.")
+
+def rm_func(args: argparse.Namespace) -> None:
+    task_data = load()
+    task = find_task(task_data.tasks, args.id)
+
+    task_data.tasks.remove(task)
+    save(task_data)
+    print(f"Task {task.id} removed.")
