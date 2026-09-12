@@ -21,3 +21,9 @@ class CorruptStorageError(TaskrError):
     def __init__(self, invalid_file: Path) -> None:
         self.invalid_file = invalid_file
         super().__init__(f"Task file is corrupted ({invalid_file}).")
+
+
+class InvalidTitleError(TaskrError):
+    def __init__(self, invalid_title: str) -> None:
+        self.invalid_title = invalid_title
+        super().__init__("Empty title name.")

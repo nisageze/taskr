@@ -3,7 +3,7 @@ import sys
 from collections.abc import Callable
 from datetime import date, datetime
 
-from taskr.errors import InvalidDateError, TaskrError
+from taskr.errors import InvalidDateError, InvalidTitleError, TaskrError
 from taskr.models import Status, Task, find_task
 from taskr.storage import load, save
 
@@ -52,6 +52,10 @@ def date_format_check(d: str) -> date:
         raise InvalidDateError(d) from e
 
 def add_func(args: argparse.Namespace) -> None:
+
+    if not args.title.strip():
+        raise InvalidTitleError(args.title)
+
     task_data = load()
 
     new_id = task_data.last_id + 1
@@ -61,7 +65,6 @@ def add_func(args: argparse.Namespace) -> None:
         new_task = Task(id=new_id, title=args.title,  due_date=args.due)
     else:
         new_task = Task(id=new_id, title=args.title, priority=args.priority, due_date=args.due)
-
 
     task_data.tasks.append(new_task)
     save(task_data)
