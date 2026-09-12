@@ -27,12 +27,11 @@ class Task:
     created_at: datetime = field(default_factory=datetime.now)
 
     def is_overdue(self) -> bool:
-        if self.due_date is None:
+        if self.due_date is None or self.status is Status.DONE:
             return False
-        else:
             # taskr is a single-user local CLI;
             # overdue status is intentionally evaluated in the user's local timezone.
-            return self.due_date < date.today()  # noqa: DTZ011
+        return self.due_date < date.today()  # noqa: DTZ011
 
     def mark_done(self) -> None:
         self.status = Status.DONE
