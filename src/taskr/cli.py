@@ -30,8 +30,6 @@ def main() -> int:
     rm_arg.set_defaults(func=rm_func)
     rm_arg.add_argument("id", help="task id", type=int)
 
-    subparsers.add_parser("stats", help="list stats")
-
     try:
         args = parser.parse_args()
 
