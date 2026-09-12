@@ -29,14 +29,13 @@ class Task:
     def is_overdue(self) -> bool:
         if self.due_date is None or self.status is Status.DONE:
             return False
-            # taskr is a single-user local CLI;
-            # overdue status is intentionally evaluated in the user's local timezone.
+        # taskr is a single-user local CLI;
+        # overdue status is intentionally evaluated in the user's local timezone.
         return self.due_date < date.today()  # noqa: DTZ011
 
     def mark_done(self) -> None:
         self.status = Status.DONE
         self.completed_at = datetime.now() # noqa: DTZ005
-
 
 
 def find_task(tasks:list[Task], task_id: int) -> Task:
