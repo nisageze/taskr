@@ -82,5 +82,16 @@ def load(taskr_file: Path = TASKR_FILE) -> TaskData:
             data = json.load(file)
     except json.JSONDecodeError as e:
         raise CorruptStorageError(taskr_file) from e
-    task_data = [dict_to_task(d) for d in data["tasks"]]
+    if not isinstance(data, dict):
+        raise CorruptStorageError(taskr_file)
+    if not isinstance(data.get("tasks"), list):
+        raise CorruptStorageError(taskr_file)
+    if type(data.get("last_id")) is not int:
+        raise CorruptStorageError(taskr_file)
+    if not all(isinstance(t, dict) for t in data["tasks"]):
+        raise CorruptStorageError(taskr_file)
+    try:
+        task_data = [dict_to_task(d) for d in data["tasks"]]
+    except (KeyError, ValueError, TypeError) as e:
+        raise CorruptStorageError(taskr_file) from e
     return TaskData(task_data, data["last_id"])
