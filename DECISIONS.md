@@ -302,3 +302,233 @@ Aldığım karar: tasks.json dosyasının içerisinde olmasını seçtim. Çünk
 Reddettiğim alternatif: farklı dosyada sayaç kullanarak tek bir sayı tutma fikrinde olası sayaç dosyasının bozulması senaryosunda id bilgileri kaybolacağı için id bilgisini tekrardan hesaplama yapılamaz ve aynı sayının kullanılma ihtimali vardır. 
 Bedel: tasks.json dosyası artık düz bir görev listesi değil, içerisinde sayaç olan bir yapı. Bu durumdan kaynaklı halihazırda tasks.json dosyasından görevleri okuyan fonksiyonda düzenlemeler yapılması gerekmektedir. Bu bedeli bilinçli bir şekilde kabul ediyorum.
 Hafta9'da SQLite'a geçilene kadar bu probleme bulunmuş geçici bir çözümdür, veri tabanı bu işi zaten yapacaktır.
+
+9 Eylül
+
+- tests/ klasörü nerede duracak?
+
+Alınan Karar: tests/ proje kökünde, src/'nin dışında duruyor.
+
+Gerekçe: src/ içinde yalnızca dağıtılacak olan bulunur. Test kodu dağıtılmaz, bir geliştirme artefaktıdır. Bu karar 1 Ağustos'ta src layout seçme gerekçemin doğrudan devamı; paket ile depo kökünü ayırmamın sebebi neyse, paket ile testleri ayırmamın sebebi de aynı.
+
+Reddedilen Alternatif: src/taskr/tests/ altında tutmak. Testler paketin içine girdiğinde kurulumla birlikte kullanıcının ortamına da kopyalanır, kullanıcının benim test dosyalarıma ihtiyacı yok.
+
+Bedel: Test dosyaları paketin dışında olduğu için import yolları kurulmuş pakete bağlı. Testi çalıştırırken paketin ortamda kurulu olması gerekiyor, dosya yolundan doğrudan çalıştırılamıyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- load ve save arasında hangi veri biçimi taşınacak?
+
+Alınan Karar: load bir TaskData nesnesi döndürüyor, save aynı nesneyi alıyor. TaskData sınıfı storage.py içinde kalıyor.
+
+Gerekçe: 7 Eylül'de sayacı tasks.json içine taşıma kararını verdiğimde dosya artık düz bir görev listesi olmaktan çıktı, içinde hem görevler hem sayaç var. İki parçayı ayrı ayrı taşımak yerine tek bir yapıda taşımayı seçtim çünkü ikisi diskte de birlikte duruyor ve birlikte yazılmak zorunda. Sınıfın storage.py'de kalmasının sebebi 1 Ağustos'taki katman kuralımın aynısı, disk biçimine dair her şey tek dosyada.
+
+Reddedilen Alternatif: load'un sözlük döndürmesi. Sözlük dict[str, Any] olur, mypy --strict içeriğini hiç denetlemez ve dosya biçimi hakkındaki bilgi kodda hiçbir yerde yazılı olmaz.
+
+Bedel: Dosya biçimi değişirse TaskData sınıfı ve dönüştürücü fonksiyonlar birlikte değişiyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- Sayacın anlamı ne, diske yazılan anahtar adları nereden geliyor?
+
+Alınan Karar: Sayaç "en son verilen numara" anlamına geliyor, "sıradaki numara" değil. Dosya yokken değeri 0. Diske yazılan anahtar adları ("tasks", "last_id") save içinde elle kuruluyor.
+
+Gerekçe: "En son verilen numara" tanımını seçtim çünkü dosya yokken 0 yazmak henüz hiç numara verilmediğini doğrudan söylüyor. "Sıradaki numara" tanımında boş dosyaya 1 yazmak gerekirdi ve o 1 hiç var olmamış bir görevi işaret ederdi. Dış sözlüğün elle kurulmasının sebebi, diske yazılan adın bir sözleşme olması; bir kez yazıldıktan sonra değiştirilirse o dosyayı okuyan her şey bozulur. Alan adını ileride değiştirmek istersem disk biçimi bundan etkilenmemeli.
+
+Reddedilen Alternatif: Dış kapsayıcıyı da asdict() ile otomatik dönüştürmek. TaskData alan adlarını disk anahtarlarına çivilerdi, alan adını değiştirdiğim gün eski dosyalar sessizce okunamaz hale gelirdi. Task seviyesinde asdict() kullanılıyor, oradaki alan adları zaten SPEC'te tanımlı yedi alan.
+
+Bedel: Eşleme elle yapıldığı için yeni bir alan eklediğimde dönüşümün iki yönünü de kendim güncellemem gerekiyor, unutursam mypy bunu göstermez. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- Dosya yolu fonksiyonlara nasıl verilecek?
+
+Alınan Karar: ensure_folder, save ve load dosya yolunu taskr_file: Path = TASKR_FILE biçiminde parametre olarak alıyor. Modül sabiti yalnızca varsayılan değer olarak duruyor, fonksiyon gövdelerinde doğrudan kullanılmıyor.
+
+Gerekçe: Sabiti gövdede kullansaydım bu üç fonksiyon yalnızca kullanıcının gerçek ~/.taskr/tasks.json dosyası üzerinde çalışabilirdi ve test yazmak için ya sabiti çalışma anında değiştirmem ya da gerçek dosyaya dokunmam gerekirdi. Parametreye alınca test geçici bir dizin verebiliyor, üretim davranışı hiç değişmiyor.
+
+Reddedilen Alternatif: Sabiti gövdede kullanmak ve testte yamalamak. Testin doğruladığı şey üretimde çalışan yol olmaktan çıkardı.
+
+Bedel: Üç fonksiyonun imzasında tekrar eden bir parametre var ve çağıran taraf (cli.py) bunu hiç kullanmıyor, her zaman varsayılanla çağırıyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- Eski biçimdeki tasks.json dosyası için göç kodu yazılacak mı?
+
+Alınan Karar: Göç kodu yazmadım. load yalnızca yeni biçimi tanıyor, eski biçimdeki bir dosya bozuk sayılıyor.
+
+Gerekçe: Biçim değişikliği yayın öncesinde yapıldı, yani dışarıda benim dosyam dışında bu biçimde bir dosya yok. Göç kodu yazmak hiç var olmayan bir kullanıcı kitlesi için kod yazmak olurdu ve o kodun kendisi de test edilmek zorunda kalırdı.
+
+Reddedilen Alternatif: load içinde eski biçimi tanıyıp dönüştüren bir dal. load'un tek sözleşmesini ikiye bölerdi.
+
+Bedel: v0.1.0 yayınlandıktan sonra biçim değişirse bu kolaylık bir daha olmayacak, o noktadan sonra göç kodu zorunlu hale geliyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+10 Eylül
+
+- find_task nerede duracak ve bulamayınca ne yapacak?
+
+Alınan Karar: find_task models.py içinde serbest bir fonksiyon. Görev listesi ile aranan id'yi alıyor, bulursa Task döndürüyor, bulamazsa TaskNotFoundError fırlatıyor. None döndürmüyor.
+
+Gerekçe: Bir görevi id ile bulmak, verinin ne anlama geldiğine dair bir iş; 1 Ağustos'ta "gecikmiş mi" kontrolü için kurduğum ayrımın aynısı. Girdisi yalnızca görev listesi ve bir sayı, diske de terminale de ihtiyacı yok. None döndürmemesinin sebebi 3 Ağustos'taki karar, hata return ile bildirilirse çağıran taraf kontrolü unuttuğu anda hata sessizce yayılır. done ve rm aynı fonksiyonu çağırıyor, ikisinde de aynı kontrolü tekrar yazmak zorunda kalmıyorum.
+
+Reddedilen Alternatif: cli.py içinde yardımcı fonksiyon olarak yazmak; Hafta 9'da ikinci bir arayüz eklenirse o arayüz bu fonksiyonu kullanamazdı. Diğer reddedilen alternatif TaskData üzerinde metot yapmak; TaskData disk biçimini temsil eden bir kapsayıcı, görev arama diskle ilgili bir iş değil.
+
+Bedel: models.py artık yalnızca veri tanımı değil, içinde liste üzerinde çalışan bir fonksiyon da barındırıyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- Görevi tamamlanmış işaretleme işi nerede duracak?
+
+Alınan Karar: mark_done Task sınıfı üzerinde bir metot. status ve completed_at tek yerden, birlikte değişiyor.
+
+Gerekçe: 1 Ağustos'ta Task'ı frozen=False seçerken kabul ettiğim bedel şuydu, iki alanın tutarlı kalmasını tip garanti etmiyor ve sorumluluk üst katmanda. Metot bu sorumluluğu tek bir yere hapsediyor. cli.py içinde iki ayrı atama yazsaydım, ileride üçüncü bir alan eklendiğinde güncellemeyi unutabileceğim ikinci bir yer doğardı.
+
+Reddedilen Alternatif: done_func içinde status ve completed_at'i ayrı ayrı atamak. Tutarlılık kuralını ekran katmanına gömerdi.
+
+Bedel: completed_at için datetime.now() kullanıldığı ve saat dilimi verilmediği için ruff DTZ005 uyarısı çıkıyor, noqa ile susturuldu; 20 Ağustos'ta kabul ettiğim susturma takibi sorumluluğunun devamı. Ayrıca metot durumu doğrudan değiştiriyor, çağıran tarafın görevin zaten tamamlanmış olup olmadığını önceden kontrol etmesi gerekiyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- Zaten tamamlanmış bir göreve done verilirse ne olacak?
+
+Alınan Karar: Kontrol cli.py içinde, done_func gövdesinde. Görev zaten tamamlanmışsa bilgilendirme satırı basılıyor, hata fırlatılmıyor, çıkış kodu 0 kalıyor. mark_done hiç çağrılmıyor, dosyaya dokunulmuyor.
+
+Gerekçe: SPEC 3.4 bu durumu hata olarak saymıyor. Kullanıcı istediği sonucu zaten almış durumda, görev tamamlanmış. Hata saymak kullanıcıyı hiçbir şeyi düzeltemeyeceği bir uyarıyla karşılamak olurdu. Kontrolün metodun dışında olmasının sebebi, mark_done bir emir, soru değil; nesneye "tamamla" dediğimde tartışmasını değil yapmasını istiyorum, yapılıp yapılmayacağına karar vermek üst katmanın işi.
+
+Reddedilen Alternatif: mark_done içinde durum kontrolü yapıp hata fırlatmak. Metodu emirden karar mekanizmasına çevirirdi ve models.py'nin kullanıcı deneyimine dair bir bilgi taşıması gerekirdi.
+
+Bedel: Çıkış kodu 0 döndüğü için bir betik açısından "tamamlandı" ile "zaten tamamlanmıştı" ayırt edilemiyor, ayırt etmek isteyen çıktı metnini okumak zorunda. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- Durum değiştiren komutlar kullanıcıya ne basacak?
+
+Alınan Karar: Durum değiştiren her komut tek satırlık bir onay basıyor ve satır etkilenen görevin id'sini içeriyor. Task N added. / Task N completed. / Task N removed. Kalıp üç komutta aynı.
+
+Gerekçe: add komutunda id'yi basmak zorunlu çünkü kullanıcının sonraki komutu (done N, rm N) o numaraya bağlı ve numarayı program üretiyor. done ve rm için zorunlu değil ama aynı kalıbı koruyorum, kullanıcı üç komutta üç farklı davranışla karşılaşmıyor ve ne olduğunu ekrandan okuyup doğrulayabiliyor. Kalıbın sabit olması ileride bu satırları test etmeyi de tek biçime indiriyor.
+
+Reddedilen Alternatif: Sessiz başarı. Unix geleneğinde bir komut başarılı olduğunda hiçbir şey basmaz ve teknik olarak daha doğru sayılan yol budur, ama taskr bir boru hattı aracı değil elle kullanılan bir görev yöneticisi. Kullanıcı her seferinde list çağırmak zorunda kalmadan ne olduğunu görebilmeli.
+
+Bedel: Çıktı boru hattında kullanılmaya uygun değil, taskr add çıktısı başka bir komuta beslenirse gürültü üretir. v1 kapsamında böyle bir kullanım yok. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+12 Eylül
+
+- v1 kapsamı kaç komut olacak?
+
+Alınan Karar: v1 kapsamı add, list, done, rm olarak dört komutla kapandı. stats ve filtreler kapsam dışı. stats parser kaydı da koddan silindi.
+
+Gerekçe: Elimdeki haftalık süre ölçülüyor ve ölçülen değer planlananın altında çıkıyor. Altı komutu yarım yayınlamak yerine dördünü kenar durumları kapalı ve testli yayınlamayı seçtim. Bir portföy projesinde okunan şey komut sayısı değil, yazılanın ne kadar savunulabilir olduğu.
+
+Reddedilen Alternatif: SPEC'teki altı komutun tamamını v1'e almak. Kalan iki komut kapsanmamış kenar durumlarla birlikte gelirdi ve yayın tarihi belirsizleşirdi.
+
+Bedel: SPEC 3.4'teki stats çıktısı v1'de yok, yani SPEC ile yayınlanan arasında bilinçli bir fark var ve bu farkı README'de "bilinen sınırlar" başlığı altında açıkça yazmam gerekiyor. stats Hafta 9'da dört satırı (parser, fonksiyon, dağıtım kaydı, test) birlikte yazılarak gelecek. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- load bozuk bir dosyayla karşılaşınca ne yapacak?
+
+Alınan Karar: load ya geçerli bir TaskData döndürür ya CorruptStorageError fırlatır, üçüncü bir hali yok. Yapısal doğrulama load içinde açık if/raise ile, alan doğrulaması dict_to_task çevresinde try/except ile yapılıyor. dict_to_task'a sözlük olmayan bir şey asla geçmiyor.
+
+Gerekçe: Bu kararı bir ölçüm sonrası verdim. {"tasks": [], "last_id": "üç"} içerikli bir dosya hiçbir hata üretmeden "No tasks yet." bastı; yapı hataları sessiz kalabiliyor ve hiçbir try/except bunu göremez çünkü ortada fırlatılan bir istisna yok. Yapı kontrolünün açık if ile yazılması gerektiğini bu ölçüm gösterdi. İki doğrulamanın iki farklı biçimde yazılmasının sebebi de bu, yapı sessiz bozulur alan gürültülü bozulur.
+
+Bu kararla birlikte alınan alt kararlar: Anahtar varlığı .get() ile kontrol ediliyor, in ile değil; "anahtar yok" ile "anahtar var ama tipi yanlış" durumları davranışı değiştirmiyor, ikisi de aynı hataya çıkıyor, ayrı kontrol yazmak kodu uzatırdı. last_id için type(...) is int seçildi, isinstance değil; bool int'in alt tipi olduğu için isinstance {"last_id": true} içeriğini kabul ederdi, bu bilinçli bir sapma. Yeni bir hata tipi ve yeni bir hata metni yazılmadı, SPEC 3.4'teki tek bozukluk cümlesi kullanıldı. dict_to_task'a dosya yolu verilmedi ve imzası değişmedi, saf bir dönüştürücü olarak kalıyor; CorruptStorageError'u kuran taraf load, tek çağıranın load olduğu rg ile doğrulandı.
+
+Reddedilen Alternatif: load'un bozuk dosyada None veya boş bir yapı döndürmesi. 3 Ağustos'ta hatayı return ile bildirmeyi zaten reddetmiştim; çağıran taraf kontrolü unuttuğu anda bozuk dosya sessizce boş liste gibi davranırdı ve kullanıcı verisinin gittiğini fark etmezdi.
+
+Bedel: dict_to_task içindeki kendi yazım hatalarım da kullanıcıya "dosya bozuk" diye raporlanabilir. Bu yüzden raise ... from e zorunlu tutuldu, en azından traceback'te gerçek sebep görünüyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- save yazma işlemi yarıda kesilirse ne olacak?
+
+Alınan Karar: save önce geçici bir dosyaya yazıyor, sonra os.replace ile geçici dosyayı hedefin yerine koyuyor. Geçici dosyanın adı sabit (tasks.json.tmp) ama modül sabitinden değil, fonksiyona gelen yoldan with_name ile türetiliyor.
+
+Gerekçe: Dosyayı "w" kipiyle açmak yazmaya başlamadan önce dosyayı boşaltıyor, yazma yarıda kesilirse ne eski veri ne yeni veri kalıyor. os.replace ile yer değiştirme işletim sistemi seviyesinde ya tamamen olur ya hiç olmaz; garanti "kesinti olmaz" değil, hedef dosyanın hiçbir zaman yarım görünmemesi. Adın parametreden türetilmesinin sebebi, os.replace yalnızca aynı dosya sistemi içinde atomik. Yoldan türetince geçici dosya ile hedef her zaman aynı dizinde, dolayısıyla garanti koşulsuz. Modül sabitinden türetseydim garanti hedefin nereye düştüğüne bağlı kalırdı ve testler geçici bir dizinde çalıştığında gerçek yolu hiç sınamamış olurdum (SPEC 3.3).
+
+Reddedilen Alternatif: Doğrudan hedefe yazmak. En kısa yol ama yarıda kesilmede dosyayı bozuyor, kaybı ölçtükten sonra reddettim.
+
+Bedel: Geçici dosyanın adı sabit olduğu için iki taskr süreci aynı anda çalışırsa aynı geçici dosyaya yazar, tek kullanıcılı bir komut satırı aracında bu risk gerçek değil. Yazma yarıda kesilirse ortada bir .tmp dosyası kalıyor, veri kaybı yok ve bir sonraki save üzerine yazıyor. Ayrıca os.replace yer değiştirmenin görünürlüğünü garanti eder, verinin diske kalıcı yazılmasını değil; fsync çağırmadım, elektrik kesintisinde veri gene kaybolabilir. Tek kullanıcılı yerel bir araç için bu üç bedeli de bilinçli bir şekilde kabul ediyorum.
+
+- 26 Ağustos'taki gecikme kararı koda ne zaman girecek?
+
+Alınan Karar: "Tamamlanmış görev gecikme sayılmaz" kararı bugün koda uygulandı. Karşılaştırma Status sabiti üzerinden yapılıyor, metinle değil.
+
+Gerekçe: Karar ile kod arasında 17 gün fark vardı; 1 Ağustos girdisinde açık bıraktığım sorunun cevabı yazılıydı ama metot hala eski davranıştaydı. Sabitle karşılaştırmanın sebebi 1 Ağustos'taki Enum kararı, metinle karşılaştırırsam Enum'u seçme gerekçemi kendi elimle deliyorum.
+
+Bedel: date.today() satırındaki yerel saat dilimi uyarısı (DTZ011) bilinçli olarak susturuldu. Gecikme kullanıcının yerel gününe göre ölçülüyor, tek kullanıcılı yerel bir araçta doğru olan bu. Susturmaların takibi 20 Ağustos'ta kabul ettiğim sorumluluğun devamı.
+
+- Boş başlık doğrulaması nerede yapılacak?
+
+Alınan Karar: Boş başlık kontrolü add_func gövdesinde yapılıyor, argparse'ın type= parametresi içinde değil. "Boş" tanımı .strip() ile, "" ve " " aynı sayılıyor. errors.py'ye InvalidTitleError eklendi, diğer üç hata sınıfıyla aynı kalıpta.
+
+Gerekçe: Hata metni SPEC 3.4 kalıbında kalsın ve çıkış kodu tek yoldan gelsin diye. Doğrulama durum değiştiren satırların önüne alındı, load çağrısı ve last_id artışı kontrolün arkasında, yani başlık boşsa dosyaya hiç dokunulmuyor.
+
+Reddedilen Alternatif: type= içinde doğrulama. argparse yalnızca ValueError, TypeError ve ArgumentTypeError tanıyor; TaskrError oradan geçseydi kullanıcıya traceback görünürdü ve SPEC bunu yasaklıyor. 26 Ağustos'ta tarih doğrulaması için verdiğim kararla aynı gerekçe.
+
+Bedel: Doğrulama komut fonksiyonunun içinde olduğu için her yeni komutta aynı kontrolü tekrar yazmam gerekebilir. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+15 Eylül
+
+Aşağıdaki kararlar daha önce verildi ve kodda uygulandı ama hiçbir günün girdisine yazılmamıştı. Tarihleri belirsiz olduğu için bugünün altında toplandı.
+
+- Kullanıcı verisi nerede duracak?
+
+Alınan Karar: Görev dosyası ~/.taskr/tasks.json. Klasör yoksa save çağrısında oluşturuluyor.
+
+Gerekçe: Ev dizini altında nokta ile başlayan bir klasör komut satırı araçlarının yerleşik alışkanlığı, kullanıcı aramadan nerede olduğunu tahmin edebiliyor ve dosya gündelik listelemede görünmüyor. Çalışma dizinini seçmedim çünkü görev listesi kullanıcıya ait, kullanıcının o an hangi klasörde olduğuna değil; farklı klasörlerden çağrıldığında farklı liste görmek istemeyeceği bir araç bu.
+
+Reddedilen Alternatif: Dosyayı çalışma dizininde tutmak. Her klasörde ayrı bir görev listesi doğururdu.
+
+Bedel: Kullanıcının görev listesini başka bir yere koyma imkanı yok, yol kodda sabit ve v1'de yapılandırılamıyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- Klasör ne zaman oluşturulacak?
+
+Alınan Karar: ensure_folder yalnızca save içinde çağrılıyor. load dosya yoksa boş bir TaskData döndürüyor ve bunu hata saymıyor.
+
+Gerekçe: Okuma işlemi hiçbir şey yaratmamalı. Kullanıcı henüz hiç görev eklemediyse taskr list çağırması diskte klasör açılmasına sebep olmamalı, "hiç görevim yok" bir hata değil normal bir başlangıç durumu. Klasör, yazılacak ilk veri olduğunda gerekiyor.
+
+Reddedilen Alternatif: Klasörü modül yüklenirken veya load içinde oluşturmak. Program her çağrıldığında diske dokunurdu.
+
+Bedel: ensure_folder çağrısı save'in her çalışmasında tekrarlanıyor, halbuki yalnızca ilk seferde iş yapıyor. exist_ok=True sayesinde maliyeti önemsiz.
+
+- JSON dosyası hangi biçimde yazılacak?
+
+Alınan Karar: json.dump çağrısında indent=2 ve ensure_ascii=False, dosya encoding="utf-8" ile açılıyor.
+
+Gerekçe: Bu dosya kullanıcının kendi verisi ve tek kullanıcılı bir araçta kullanıcının onu açıp okuyabilmesi bir özellik. ensure_ascii=False olmadan Türkçe karakterler kaçış dizileri olarak yazılır ve dosya elle okunamaz hale gelir. Kodlamanın açıkça belirtilmesinin sebebi varsayılanın işletim sistemine göre değişmesi, dosyayı yazan ile okuyan aynı kodlamayı kullanmak zorunda.
+
+Reddedilen Alternatif: Girintisiz, sıkıştırılmış JSON. Dosya boyutu küçülürdü ama bu boyutta bir dosyada kazanç yok, okunabilirlik kaybı gerçek.
+
+Bedel: Dosya girintisiz haline göre birkaç kat büyük. Görev sayısı çok arttığında bu fark büyür, Hafta 9'da SQLite'a geçildiğinde konu kapanıyor.
+
+- Hata metni hangi akıma basılacak?
+
+Alınan Karar: Yakalanan TaskrError stderr'e basılıyor ve metnin başına Error: öneki konuyor. Normal çıktılar stdout'ta kalıyor.
+
+Gerekçe: İki akımın ayrı olması, kullanıcının taskr list çıktısını bir dosyaya yönlendirdiğinde hata metninin o dosyaya karışmamasını sağlıyor, hata ekranda kalır veri dosyaya gider. Önek hata metnini normal çıktıdan ayırt edilebilir kılıyor, kullanıcı her iki akımı da aynı ekranda görüyor.
+
+Reddedilen Alternatif: Hatayı print ile stdout'a basmak. Çıktı yönlendirildiğinde hata sessizce dosyaya giderdi ve kullanıcı ekranda hiçbir şey görmezdi.
+
+Bedel: Hata metninin sabit bir önekle başlaması, mesajın kendisinde zaten açık olan bir bilgiyi tekrarlıyor.
+
+- --priority değeri nasıl doğrulanacak?
+
+Alınan Karar: --priority argümanı choices=["high", "medium", "low"] ile tanımlandı. Geçersiz bir değer argparse tarafından reddediliyor.
+
+Gerekçe: Bu üç değer sabit bir kümedir ve argparse'ın kendi üretebildiği bir doğrulama türü. 26 Ağustos'ta tarih doğrulamasını argparse dışına almıştım çünkü orada üretilecek hata metni ve çıkış kodu üzerinde kontrol istiyordum; burada küme sonlu olduğu ve argparse'ın ürettiği mesaj geçerli seçenekleri tek tek gösterdiği için aynı ihtiyaç yok.
+
+Reddedilen Alternatif: Değeri kendi fonksiyonumda doğrulayıp TaskrError türevi bir hata fırlatmak. Sonlu ve değişmeyen bir küme için ek kod ve ek hata sınıfı demekti.
+
+Bedel: Hata metni ve çıkış kodu argparse'ın ürettiği biçimde kalıyor, SPEC 3.4 kalıbına uymuyor. Ayrıca choices yalnızca metnin geçerli olduğunu doğruluyor, Priority üyesine çevirmiyor; bu eksik açık madde olarak duruyor.
+
+- id argümanı nasıl alınacak?
+
+Alınan Karar: done ve rm komutlarının id argümanı type=int ile tanımlandı.
+
+Gerekçe: Metinden sayıya çevirme argparse'ın kendi işi ve çevrilemeyen bir değer için ürettiği mesaj yeterince açık. find_task bu sayede her zaman sayı alıyor, sayı olup olmadığı kontrolünü kendi katmanımda tekrar yazmam gerekmiyor.
+
+Reddedilen Alternatif: Metni olduğu gibi alıp find_task içinde çevirmek. Aynı kontrolü iki komut için iki kez yazmak ya da üçüncü bir yardımcı fonksiyon açmak gerekirdi.
+
+Bedel: taskr done abc çağrısında çıkan hata metni argparse'ın ürettiği biçimde, SPEC 3.4 kalıbında değil. --priority ile aynı bedel.
+
+- list çıktısı nasıl biçimlenecek?
+
+Alınan Karar: Çıktı sabit genişlikli beş kolon: ID (3), PRIORITY (9), STATUS (8), DUE (12), TITLE. Başlık satırı ve altına çizgi satırı basılıyor. Bitiş tarihi yoksa tire, görev gecikmişse başlığın önüne ünlem işareti konuyor. Liste boşsa tek satır basılıyor.
+
+Gerekçe: Sabit genişlik kolonların satırlar arasında hizalı kalmasını sağlıyor, değişken genişlikli bir çıktı terminalde okunamaz hale gelir. Gecikme işaretinin ayrı bir kolon değil başlığın önünde durmasının sebebi, gecikmenin yalnızca bazı satırlarda olan bir istisna olması; kendi kolonu olsaydı satırların çoğu boş bir kolon taşırdı. Boş liste için hata değil bilgilendirme satırı basılıyor çünkü görev olmaması normal bir durum.
+
+Reddedilen Alternatif: Gecikme için ayrı kolon açmak.
+
+Bedel: TITLE kolonu son sırada ve genişliği sınırsız, uzun başlıklar satırı taşırıyor. Ayrıca sabit genişlikler PRIORITY ve STATUS değerlerinin şu anki uzunluklarına göre seçildi, yeni bir değer eklenirse hizalama elle güncellenmek zorunda.
+
+- Status kaç durum taşıyacak?
+
+Alınan Karar: Status enum'unda yalnızca PENDING ve DONE var.
+
+Gerekçe: SPEC'in tanımladığı komut kümesi bir görevi yalnızca iki duruma sokabiliyor, eklendiği hali ve tamamlanmış hali. "Devam ediyor" veya "iptal edildi" gibi ara durumlar, kullanıcının onları belirleyebileceği bir komut olmadıkça hiçbir zaman oluşamaz.
+
+Reddedilen Alternatif: İleride gerekebilecek durumları şimdiden tanımlamak. Kullanılmayan bir enum üyesi, list çıktısında ve testlerde karşılığı olmayan bir dal açardı.
+
+Bedel: Yeni bir durum eklendiğinde enum, list hizalaması ve is_overdue mantığı birlikte gözden geçirilmek zorunda.
