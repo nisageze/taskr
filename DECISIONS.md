@@ -1,5 +1,11 @@
 # DECISIONS.md — taskr tasarım kararları
 
+> Bu dosya taskr v0.1.0 geliştirilirken tutulan Türkçe karar günlüğüdür. Girdiler kronolojiktir;
+> bir karar sonradan değiştiyse eski metin korunur ve altına tarihli bir düzeltme notu eklenir.
+> Metinde geçen "Hafta N" ifadeleri projenin 12 haftalık çalışma planına, "SPEC" ifadeleri repoda
+> bulunmayan proje şartnamesine atıf yapar. Hafta 9 ve sonrası için planlanan işler (SQLite, stats,
+> filtreler) v0.1.0 kapsamına girmedi.
+
 ---
 
 ## 1 AĞUSTOS 2026 — CUMARTESİ
@@ -24,6 +30,9 @@ Bundan dolayı hatalı girişler olabilir. Literal düz metin olduğundan ve den
 - ENUM sırası Low -> High
 
     Enum tanım sırasını korur; list komutunda önceliğe göre sıralama bundan faydalanacak.
+
+    **[19 Eylül düzeltmesi]** v0.1.0'da list sıralama yapmıyor, görevler eklenme sırasıyla basılıyor. Tanım sırası
+    bu sürümde hiçbir yerde kullanılmıyor.
 
 - "Süresi geçmiş mi?" kontrolü models.py'ye ait
 
@@ -50,6 +59,7 @@ Bundan dolayı hatalı girişler olabilir. Literal düz metin olduğundan ve den
 - Task mutable (frozen=FALSE)
 
     Gerekçe : done komutu status ve completed_at'i birlikte değiştirecek Frozen olsaydı her değişiklikte yeni nesne üretmek gerekirdi.
+
     Bedeli : İki alanın tutarlı kalmasını tip garanti etmiyor; bu sorumluluk done komutunu işleyen katmanda.
 
 - created_at için field(default_factory=datetime.now)
@@ -126,7 +136,7 @@ due_date None olması durumu kullanıcı görev için bitiş tarihi girmediğind
 
 - Neden completed_at karşılaştırmanın sağ tarafı değil?
 
-completed_at değeri kullanıcının done değeri girdiğinde belirlenen bir veridir, due_date ise kullanıcının görevi atarken girdiği bitiş tarihidir. kullanıcı halen görev devam ederken tarih geçmişte olabilir, bundan dolayı görev devam ederken completed_at henüz oluşmamıştır, bunun önüne geçmek için kullanıcının sorgusu esnasında geçici olarak anlık tarih alınıp karşılaştırma yapılır. Bir alan oluşturmak yerine anlık geçici tarih almamdaki sebep ise;  hem gecikmeli/yanlış sonuç vermenin önüne geçmek, değer sorgu anında değil görev oluşturulduğu anda atanacağından gecikmiş bir görev gecikmemiş gibi görünürdü, hemde ekstra bir nesne ekstra bir veri ve depolamanın önüne geçmek.
+completed_at değeri kullanıcının done değeri girdiğinde belirlenen bir veridir, due_date ise kullanıcının görevi atarken girdiği bitiş tarihidir. kullanıcı halen görev devam ederken tarih geçmişte olabilir, bundan dolayı görev devam ederken completed_at henüz oluşmamıştır, bunun önüne geçmek için kullanıcının sorgusu esnasında geçici olarak anlık tarih alınıp karşılaştırma yapılır. Bir alan oluşturmak yerine anlık geçici tarih almamdaki sebep ise;  hem gecikmeli/yanlış sonuç vermenin önüne geçmek, değer sorgu anında değil görev oluşturulduğu anda atanacağından gecikmiş bir görev gecikmemiş gibi görünürdü, hem de ekstra bir nesne ekstra bir veri ve depolamanın önüne geçmek.
 
 - Neden due_date date, ama created_at ve completed_at datetime?
 
@@ -134,7 +144,7 @@ due_date kullanıcı tarafından girilen bir veri olduğundan kaynaklı sadece t
 
 - status gecikme hesabına giriyor mu? 
 
-Tamamlanmış fakat tarihi geçmiş bir görev list çıktısında gecikmiş olarak işaretlenmeli mi? Geciken sayısı neyi ölçmeli? soruları şuan için cevaplanması erken olan sorular olduğundan kaynaklı Hafta 5'te stats yazılırken kapanacak.
+Tamamlanmış fakat tarihi geçmiş bir görev list çıktısında gecikmiş olarak işaretlenmeli mi? Geciken sayısı neyi ölçmeli? soruları şu an için cevaplanması erken olan sorular olduğundan kaynaklı Hafta 5'te stats yazılırken kapanacak.
 26 Ağustos'ta kapandı, bkz. o günün girdisi.
 
 - Hata sınıfları neden somut değeri ayrıca bir alanda tutuyor? İsimlendirme kuralın ne?
@@ -151,10 +161,9 @@ Alan olarak atamamızın sebebi kullanıcı görevi oluşturduğunda anlık alı
 
 - __main__.py import biçimi: mutlak (from taskr.cli import main)
 
-__main__.py dosyasında mutlak yoldan import yapmamdaki sebebi; her ne kadar göreli import taşınmaya daha dayanıklı olsa da projeyi daha okunabilir yapmak ve dosya bağımsızlıkları gibi avantajları tercih ettim. İlerleyen süreçlerde ekleyeceğim storage.py gibi dosyalarda kullanacağım importlarda da aynı yolu kulanmayı planlamaktayım çünkü proje içerisindeki dosyaları adaptasyonu kolay dosyalar olarak planlamayı düşünüyorum. Yazarken bilinçli bir tercih değildi, çalıştıktan sonra iki seçeneği karşılaştırıp arkasında durmaya karar verdim.
+__main__.py dosyasında mutlak yoldan import yapmamdaki sebebi; her ne kadar göreli import taşınmaya daha dayanıklı olsa da projeyi daha okunabilir yapmak ve dosya bağımsızlıkları gibi avantajları tercih ettim. İlerleyen süreçlerde ekleyeceğim storage.py gibi dosyalarda kullanacağım importlarda da aynı yolu kullanmayı planlamaktayım çünkü proje içerisindeki dosyaları adaptasyonu kolay dosyalar olarak planlamayı düşünüyorum. Yazarken bilinçli bir tercih değildi, çalıştıktan sonra iki seçeneği karşılaştırıp arkasında durmaya karar verdim.
 
 Proje kuralı : taskr paketi içindeki tüm dosyalarda mutlak import kullanılacak.
-
 
 - __main__.py de if __name__ == "__main__" guardı yok.
 
@@ -162,14 +171,13 @@ __main__.py dosyası yalnızca python -m taskr ile çalıştığı zaman devreye
 
 - commit hangi dil, neden?
 
-Commit atarken ingilizce dili tercih edeceğim çünkü, projede kullanıcıların göreceği kısımlar ingilizce olması gerektiğini düşünmekteyim. Commit geçmişi de projenin nasıl büyüdüğünü gösteren ikinci bir dokümandır, projemin planlamasını yaparken README ingilizce olacak kuralımı bundan sonraki commitler içinde uygulayacağım. Bu karardaki bedel ise ingilizce ana dilim değil (B2) bundan kaynaklı cümle kurarken zorlanabilir ve net cümleler kuramayabilirim. Geçmişte atmış olduğum türkçe commitler kalabilirler, bugünden itibaren bu kural geçerli olacaktır.
+Commit atarken İngilizce dili tercih edeceğim çünkü, projede kullanıcıların göreceği kısımlar İngilizce olması gerektiğini düşünmekteyim. Commit geçmişi de projenin nasıl büyüdüğünü gösteren ikinci bir dokümandır, projemin planlamasını yaparken README İngilizce olacak kuralımı bundan sonraki commitler içinde uygulayacağım. Bu karardaki bedel ise İngilizce ana dilim değil (B2) bundan kaynaklı cümle kurarken zorlanabilir ve net cümleler kuramayabilirim. Geçmişte atmış olduğum Türkçe commitler kalabilirler, bugünden itibaren bu kural geçerli olacaktır.
 
-ingilizce = kod, commit, README, docstring, kullanıcıya giden hata mesajları · türkçe = DECISIONS.md, CALISMA.md, NOTLAR.md, IDEAS.md.
-
+İngilizce = kod, commit, README, docstring, kullanıcıya giden hata mesajları · Türkçe = DECISIONS.md, CALISMA.md, NOTLAR.md, IDEAS.md.
 
 - Sürüm politikası 
 
-uygulamanın mevcut sürümü 0.1.0 olarak belirledim, sebebi; Semantic Versioning kaynaklı, kurallara göre sabit bir API bulunmayan halen geliştirme aşamasında olan projelerin sürümleri 0 ile başlayabilir. Sürüm güncellemesini ise arayüz durulduktan sonra 1.0.0 olarak güncelleme kararı aldım sonrasında gelecek olan güncellemeler ile beraber sürümü 1.1.0 vb. olarak güncelleme kararı aldım. Kullanıcılar tarafından sürüm takibinin kolay olması açısından. Şuanlık 0.1.0 tutmamın bir diğer sebebi de projede her an her şey değişebilir bundan kaynaklı bunun takibinin zor olacağını ön görüyorum. 
+uygulamanın mevcut sürümü 0.1.0 olarak belirledim, sebebi; Semantic Versioning kaynaklı, kurallara göre sabit bir API bulunmayan halen geliştirme aşamasında olan projelerin sürümleri 0 ile başlayabilir. Sürüm güncellemesini ise arayüz durulduktan sonra 1.0.0 olarak güncelleme kararı aldım sonrasında gelecek olan güncellemeler ile beraber sürümü 1.1.0 vb. olarak güncelleme kararı aldım. Kullanıcılar tarafından sürüm takibinin kolay olması açısından. Şu anlık 0.1.0 tutmamın bir diğer sebebi de projede her an her şey değişebilir bundan kaynaklı bunun takibinin zor olacağını ön görüyorum. 
 
 - Repo düzeni değişimi
 
@@ -183,24 +191,27 @@ kaynak(kod) ve beyanlar repo'ya girer fakat yeniden üretimi deterministik olan 
 
 SPEC ağacı src/ içermiyor, uv_build varsayılanı gereği kullanıldı. bilinçli sapma.
 
-16 Ağustos 2026
+---
+
+## 16 AĞUSTOS 2026 — PAZAR
 
 - Task <-> dict dönüşümü nereye ait?
 
-Task <-> dict dönüşümü storage.py dosyasına aittir (task_to_dict, dict_to_task ve type_conversion yapıyor). Bu kararı almamdaki sebepler; disk ile ilgili her şeyin storage.py da olması hem okunabilirlik açısından hem de disk ile ilgili değişiklik yapmak istediğimizde tek bir dosya üzerinden gerçekleştirebilme imkanı, projenin temel kuralı olan models.py JSON varlığını bilmemeli kuralı.
+Task <-> dict dönüşümü storage.py dosyasına aittir (task_to_dict, dict_to_task ve json_serialize yapıyor). Bu kararı almamdaki sebepler; disk ile ilgili her şeyin storage.py da olması hem okunabilirlik açısından hem de disk ile ilgili değişiklik yapmak istediğimizde tek bir dosya üzerinden gerçekleştirebilme imkanı, projenin temel kuralı olan models.py JSON varlığını bilmemeli kuralı.
+
 Reddedilen alternatif Task sınıfına to_dict() ve from_dict() metotları koymak. yukarıdaki sebeplerden kaynaklı bu yolu seçmedim.
+
 Bedeli ise veri yapısında bir değişiklik olması dahilinde bu değişikliklerin iki farklı yerde kontrol edilip uygun hale getirilmesi olacaktır, değişiklik tek yerde kalmayacaktır. Bu bedeli bilinçli bir şekilde kabul ediyorum.
 
+- ruff check extend-select = ["A"] kurallarını ekleme sebebim: proje içerisinde değişken adları, fonksiyon adları ve sınıf adları olası bir isimlendirme hatasında yerleşik isimleri gölgeleyebilir, bu durum hem projenin okunabilirliğini düşürür, hem de ileride sebebi belli olmayan hatalara sebep olabilir.
 
-Task to dict transformation belongs to storage.py file (task_to_dict, dict_to_task and type_conversion make this transformation). Behind the reasons why i made this decision; storage.py has everything about disk, this makes more readable and also when i want to change anything about disk, i can make that change from one file. The other reason is project has one rule: models.py shouldn't know anything about JSON.
-The rejected alternative was adding to_dict() and from_dict() methods to Task class. I didn't choose this option because above reasons.
-The price that i pay is; if the data model changes, i have to check and make changes in different file, changes won't be in one file. I am aware of this price and accept it.
+Reddedilen alternatif: Varsayılan kural seti ve daha geniş bir set açmak, reddetme sebebim varsayılan kural seti benim kodda kontrol etmek istediğim bulgulara yeterli gelmiyordu aynı şekilde daha geniş bir kural seti kullanmaya şu an için ihtiyacım bulunmuyor, ileride kontrol etmek istediğim farklı kurallar olursa genişletmeyi arttırabilirim. 
 
-- ruff check extend-select = ["A"] kurallarını ekleme sebebim: proje içerisinde değişken adları, fonksiyon adları ve sınıf adları olası bir isimlendirme hatasında yerleşik isimleri gölgeleyebilir, bu durum hem projenin okunabilirliğini düşürür, hemde ileride sebebi belli olmayan hatalara sebep olabilir.
-Reddedilen alternatif: Varsayılan kural seti ve daha geniş bir set açmak, reddetme sebebim varsayılan kural seti benim kodda kontrol etmek istediğim bulgulara yeterli gelmiyordu aynı eşkilde daha geniş bir kural seti kullanmaya şuan için ihtiyacım bulunmuyor, ileride kontrol etmek istediğim farklı kurallar olursa genişletmeyi arttırabilirim. 
-Bedel: Şuanda ruff check için eklemiş olduğum kural "A" kural sınıfına dahil olan "A003" kuralı gölgeleyen ad sınıf kapsamı içinden referans edilmediği için sessiz kalır, kural tanımının dışında kaldığı için hata vermez, bu ve bunun gibi kural sınırlarını, kontrol edilen ve edilmeyen durumların takibini yapmam gerekmektedir, bu bedeli bilinçli bir şekilde kabul ediyorum.
+Bedel: Şu anda ruff check için eklemiş olduğum kural "A" kural sınıfına dahil olan "A003" kuralı gölgeleyen ad sınıf kapsamı içinden referans edilmediği için sessiz kalır, kural tanımının dışında kaldığı için hata vermez, bu ve bunun gibi kural sınırlarını, kontrol edilen ve edilmeyen durumların takibini yapmam gerekmektedir, bu bedeli bilinçli bir şekilde kabul ediyorum.
 
-20 Ağustos
+---
+
+## 20 AĞUSTOS 2026 — PERŞEMBE
 
 - isinstance() içerisinde str kontrolü yapmak. Bu kararı almamdaki sebep Enum filtresini korumak, veri sınırını kodda görünür bırakmak.
 
@@ -216,10 +227,11 @@ Reddedilen Alternatif: UTC'ye geçmek, pyproject.toml'da proje geneli ignore tz=
 
 Bedel: Ignore kullanmayı reddettiğim için projenin akışına uygun olmayan kontrolleri sustururken, bilinçli sebepler seçip bu susturmaları takip etmek benim sorumluluğumda.
 
+---
 
-25 Ağustos
+## 25 AĞUSTOS 2026 — SALI
 
-- main() fonksiyonun işlevi: aldığım karar cli.py'ın yapması gerekenleri ayrı fonksiyonlarda yazıp, main() çatısı altında birleştirmek, sebebi ise; kodun test edilebilirliğini, okunabilirliğini arttırmak ve ileride işlevleri geliştirme durumunda tek bir fonkisyon üzerinden yapmam yeterli olacağı için bu kararı aldım, projede çok katmanlı bir iş olmadığı için ayrı fonksiyon yazmanın bu boyutta daha iyi olacağını düşünüyorum. 
+- main() fonksiyonun işlevi: aldığım karar cli.py'ın yapması gerekenleri ayrı fonksiyonlarda yazıp, main() çatısı altında birleştirmek, sebebi ise; kodun test edilebilirliğini, okunabilirliğini arttırmak ve ileride işlevleri geliştirme durumunda tek bir fonksiyon üzerinden yapmam yeterli olacağı için bu kararı aldım, projede çok katmanlı bir iş olmadığı için ayrı fonksiyon yazmanın bu boyutta daha iyi olacağını düşünüyorum. 
 
 Reddettiğim alternatif : tüm işlevleri tek bir main() içerisinde birleştirmek; reddetme sebebim ise kodun test edilebilirliğini( add'i test etmek için argparse'ı da devreye sokmak zorunda kalırım )ve okunabilirliğini düşüreceği olması.
 
@@ -231,21 +243,33 @@ Reddedilen alternatif: main()'in hiçbir şey döndürmeyip sonlandırmayı kend
 
 Bedel 0-255 olan byte sınırının aşılıp aşılmaması kontrolünü yapmak olacaktır.
 
-26 Ağustos
+---
+
+## 26 AĞUSTOS 2026 — ÇARŞAMBA
 
 - Doğrulama argparse dışında, InvalidDateError kalıyor. Bu kararı alırken ölçülen 3 tip var; ValueError, mesajı yutuyor, ArgumentTypeError, SPEC metnini geçiriyor, InvalidDateError, traceback üretiyor.
+
 Bu karar alınırken alınan diğer bir alt karar ise type= fonksiyonunun .date() ile daraltılmış değer döndürmesi
+
 Gerekçe: alan tipi date, datetime alt sınıfı olduğu için mypy fark etmez, fark storage.py'da isoformat() saat ekiyle çıkar. try bloğu dar tutuluyor içerisinde sadece strptime var.
+
 Reddedilen Alternatif: ArgumentTypeError; ArgumentTypeError metni ve çıkış kodunu otomatik geçiriyor, ben bu projeyi öğrenme amaçlı yapıyorum aynı sonucu kendim üretecek olsamda, aslında teknik olarak daha iyi olan seçeneği öğrenme amacı sebebiyle reddediyorum.
+
 Bedel: Çıkış kodunu ve metnini ben üreteceğim, öğrenme önceliğim olduğu için bu bedeli bilinçli bir şekilde kabul ediyorum. 
 
+**[19 Eylül düzeltmesi]** "InvalidDateError traceback üretiyor" gözlemi mevcut kod için geçerli değil. parse_args artık main'in try bloğu içinde çağrılıyor; type= fonksiyonundan fırlatılan InvalidDateError argparse tarafından yakalanmadan yukarı çıkıyor, main'de yakalanıyor ve kullanıcıya traceback değil "Error:" satırı basılıyor.
+
 - Tamamlanmış görev gecikme sayılmaz, is_overdue status'e bakar, list ve stats tek metot. stats görev listesinin bugünkü durumunu ölçüyor, geçmiş performansı değil, biz hala açık olup geciken işleri listeliyoruz aslında stats da, herhangi bir bitmiş görevin durumuna bakmıyoruz. Projenin bizden beklediği stats çıktısına göre alınmış bir karar (SPEC 3.4)
-Reddedilen alternatif: Hem tamamlanmış görevlerde hemde tamamlanmamış görevlerde gecikme hesabı yapmak, şuanda projenin benden böyle bir beklentisi olmadığı için reddettim.
+
+Reddedilen alternatif: Hem tamamlanmış görevlerde hem de tamamlanmamış görevlerde gecikme hesabı yapmak, şu anda projenin benden böyle bir beklentisi olmadığı için reddettim.
+
 Bedel: Geç tamamlanan görevler projenin ilk versiyonunda çıktıya sahip değil. Kullanıcı tamamlamış ve gecikmiş olduğu görevlerin verisini göremiyor. Geçmiş görevlerin durumunu görmek istersek elimizdeki completed_at ve due_date verilerinden görebiliriz, istersek ilerleyen süreçlerde hesaplayabiliriz. Bu ek iş bedelini bilinçli bir şekilde kabul ediyorum 
 
 Bu kararla birlikte 1 Ağustos ve 4 Ağustos'ta açık kalan sorular bugün kapandı.
 
-27 Ağustos
+---
+
+## 27 AĞUSTOS 2026 — PERŞEMBE
 
 - Kullanıcı taskr yazıp hiçbir komut vermediğinde ne olacak?
 
@@ -257,6 +281,8 @@ Bedel: Hata yakalama, çıktı mesajı ve kodu üretmek ekstra iş ve kod kalaba
 
 Şu an durumu: taskr tek başına çağrıldığında sessizce 0 dönüyor. Henüz kodda uygulanmadı.
 
+**[19 Eylül düzeltmesi]** Karar kodda uygulandı: komut verilmezse main yardım metnini basıp 1 döndürüyor.
+
 - Yeni görev id'si üretme ve id kullanımının tekrarlanmaması için kontrolün nasıl yapılacağı
 
 Alınan Karar: liste boşsa 1, doluysa mevcut en büyük id + 1 olması
@@ -264,7 +290,9 @@ Alınan Karar: liste boşsa 1, doluysa mevcut en büyük id + 1 olması
 Reddedilen Alternatif: En küçük boş numarayı vermek. Yeni atanan bir görev, silinen görevin numarasını alabilir, yani kullanılmış bir numara tekrar kullanılır. Projede bir görevde kullanılan bir görev numarasının tekrar kullanılması yasak.
 Tamamlanmış ve aktif olan görevlere ayrı numara dizisi vermek. Bir görevin id'si değişirse görev durumunu değiştirmek istediğimiz zaman kimlik durumunda karışıklık olacağından hatalara sebep olabilir.
 
-Bedel: Şuanda seçtiğim yol nadirde olsa reddettiğim seçenek ile aynı açığı, görev numarasını birden fazla kez kullanma riskini taşıyor. rm yazıldığı gün; ayrı dosyada sayaç tutmak (iki doğruluk kaynağı), tasks.json yapısını değiştirmek (save/load imzaları değişir, mevcut dosya okunmaz), silinen kaydı işaretleyip tutmak (list ve stats filtrelemek zorunda) bu üç yoldan birini seçmem gerekecek.
+Bedel: Şu anda seçtiğim yol nadirde olsa reddettiğim seçenek ile aynı açığı, görev numarasını birden fazla kez kullanma riskini taşıyor. rm yazıldığı gün; ayrı dosyada sayaç tutmak (iki doğruluk kaynağı), tasks.json yapısını değiştirmek (save/load imzaları değişir, mevcut dosya okunmaz), silinen kaydı işaretleyip tutmak (list ve stats filtrelemek zorunda) bu üç yoldan birini seçmem gerekecek.
+
+**[19 Eylül düzeltmesi]** Bu karar 7 Eylül'de değiştirildi. id artık en büyük id + 1 ile değil, tasks.json içinde tutulan sayaçla üretiliyor; bkz. 7 Eylül ve 9 Eylül girdileri.
 
 - strptime satırındaki ruff uyarısı nasıl kapatılacak
 
@@ -275,7 +303,9 @@ Ignore kullanmayı proje kapsamında reddetmiştim.
 
 Bedel: DTZ011 bedeli ile aynıdır. Ek olarak ileride strptime satırı değişirse ve gerçekten saat dilimi gerektiren bir hale gelirse uyarı gelmeyecek.
 
-29 Ağustos
+---
+
+## 29 AĞUSTOS 2026 — CUMARTESİ
 
 - opsiyonel bir argümanın varsayılan değerinin nerede tanımlanacağı
 
@@ -288,22 +318,36 @@ Birden fazla opsiyonel alanda if zinciri uzar ve bu da okunabilirliği düşür�
 
 Kod henüz yazılmadı, dispatch ile beraber gelecek.
 
-6 Eylül
+**[19 Eylül düzeltmesi]** Dispatch ile birlikte add_func içinde uygulandı.
+
+---
+
+## 6 EYLÜL 2026 — PAZAR
 
 - args.func(args) tipinin Any olmasından kaynaklı mypy --strict'in hata vermesi durumuna aldığım karar; fonksiyonların dönüş tipini int'dan None'a çevirmek ve çıkış kodunu main üzerinden döndürmek 
+
 Sebep: Şu anda fonksiyonlar sadece 0 çıkış kodunu döndürüyorlar, hiçbir koşulda 1 (hata) kodunu döndürmüyorlar, daha öncesinde TaskrError hatasının tek hata yolu olmasını seçmiştim bu kararıma uygun olması ve ayrıca Callable ile birlikte tüm komutların aynı imzayla yazılması gerekmektedir, aksi takdirde mypy hata verir. 
+
 Reddedilen Alternatif: Fonksiyonların kendi çıkış kodlarını döndürmesi, hata bildirimi için iki farklı yer oluyordu (hem fonksiyonlar, hem main), aynı işi iki farklı mekanizmanın yapması ilerleyen süreçlerde çelişebilir. Şu anda mevcut kodda bu kanal çalışmıyordu çünkü iki fonksiyonda her koşulda 0 döndürüyordu. cast ve type: ignore opsiyonları ise hatayı susturuyordu, yanlış imzalı bir fonksiyonun sessizce geçmesi anlamına geldiğinden reddettim
+
 Bedel: Bir komutun TaskrError fırlatmadan sonucu boş olması gerektiği bir durumda (görevleri listelerken öncelik ve görev durumu filtreleri eklediğimizde filtreye uygun görev yoksa hata değildir, sadece çıktı boştur) çıkış kodunu (1) gene fonksiyon üzerinden göndermemiz gerekir ve çıktının kontrolünü yapmamız gerekir.  
 
-7 Eylül
+---
 
-- Aynı id iki kez kullanılmamalı, kodun şuanki yapısında son eleman silinince aynı numara kullanılıyor. kullanılan en büyük id bilgisini nerede tutacağım? 
+## 7 EYLÜL 2026 — PAZARTESİ
+
+- Aynı id iki kez kullanılmamalı, kodun şu anki yapısında son eleman silinince aynı numara kullanılıyor. kullanılan en büyük id bilgisini nerede tutacağım? 
+
 Aldığım karar: tasks.json dosyasının içerisinde olmasını seçtim. Çünkü görev silme ve sayaç güncelleme aynı anda olması gereken iki şeydir, aynı yazma işleminde olmazsa arada çökme olabilir.
-Reddettiğim alternatif: farklı dosyada sayaç kullanarak tek bir sayı tutma fikrinde olası sayaç dosyasının bozulması senaryosunda id bilgileri kaybolacağı için id bilgisini tekrardan hesaplama yapılamaz ve aynı sayının kullanılma ihtimali vardır. 
-Bedel: tasks.json dosyası artık düz bir görev listesi değil, içerisinde sayaç olan bir yapı. Bu durumdan kaynaklı halihazırda tasks.json dosyasından görevleri okuyan fonksiyonda düzenlemeler yapılması gerekmektedir. Bu bedeli bilinçli bir şekilde kabul ediyorum.
-Hafta9'da SQLite'a geçilene kadar bu probleme bulunmuş geçici bir çözümdür, veri tabanı bu işi zaten yapacaktır.
 
-9 Eylül
+Reddettiğim alternatif: farklı dosyada sayaç kullanarak tek bir sayı tutma fikrinde olası sayaç dosyasının bozulması senaryosunda id bilgileri kaybolacağı için id bilgisini tekrardan hesaplama yapılamaz ve aynı sayının kullanılma ihtimali vardır. 
+
+Bedel: tasks.json dosyası artık düz bir görev listesi değil, içerisinde sayaç olan bir yapı. Bu durumdan kaynaklı halihazırda tasks.json dosyasından görevleri okuyan fonksiyonda düzenlemeler yapılması gerekmektedir. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+Hafta 9'da SQLite'a geçilene kadar bu probleme bulunmuş geçici bir çözümdür, veri tabanı bu işi zaten yapacaktır.
+
+---
+
+## 9 EYLÜL 2026 — ÇARŞAMBA
 
 - tests/ klasörü nerede duracak?
 
@@ -355,7 +399,9 @@ Reddedilen Alternatif: load içinde eski biçimi tanıyıp dönüştüren bir da
 
 Bedel: v0.1.0 yayınlandıktan sonra biçim değişirse bu kolaylık bir daha olmayacak, o noktadan sonra göç kodu zorunlu hale geliyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
 
-10 Eylül
+---
+
+## 10 EYLÜL 2026 — PERŞEMBE
 
 - find_task nerede duracak ve bulamayınca ne yapacak?
 
@@ -397,7 +443,9 @@ Reddedilen Alternatif: Sessiz başarı. Unix geleneğinde bir komut başarılı 
 
 Bedel: Çıktı boru hattında kullanılmaya uygun değil, taskr add çıktısı başka bir komuta beslenirse gürültü üretir. v1 kapsamında böyle bir kullanım yok. Bu bedeli bilinçli bir şekilde kabul ediyorum.
 
-12 Eylül
+---
+
+## 12 EYLÜL 2026 — CUMARTESİ
 
 - v1 kapsamı kaç komut olacak?
 
@@ -447,9 +495,13 @@ Gerekçe: Hata metni SPEC 3.4 kalıbında kalsın ve çıkış kodu tek yoldan g
 
 Reddedilen Alternatif: type= içinde doğrulama. argparse yalnızca ValueError, TypeError ve ArgumentTypeError tanıyor; TaskrError oradan geçseydi kullanıcıya traceback görünürdü ve SPEC bunu yasaklıyor. 26 Ağustos'ta tarih doğrulaması için verdiğim kararla aynı gerekçe.
 
+**[19 Eylül düzeltmesi]** Reddedilen alternatifin gerekçesi mevcut kod için geçerli değil. parse_args main'in try bloğu içinde çağrıldığı için type= içinden fırlatılan bir TaskrError traceback üretmiyor, yakalanıp "Error:" satırı olarak basılıyor; tarih doğrulaması (date_format_check) bugün tam olarak bu yolla çalışıyor. Karar değişmedi, boş başlık kontrolü add_func gövdesinde kalıyor. Kayda geçen şey, iki yolun bugün kullanıcıya aynı sonucu verdiği.
+
 Bedel: Doğrulama komut fonksiyonunun içinde olduğu için her yeni komutta aynı kontrolü tekrar yazmam gerekebilir. Bu bedeli bilinçli bir şekilde kabul ediyorum.
 
-15 Eylül
+---
+
+## 15 EYLÜL 2026 — SALI
 
 Aşağıdaki kararlar daha önce verildi ve kodda uygulandı ama hiçbir günün girdisine yazılmamıştı. Tarihleri belirsiz olduğu için bugünün altında toplandı.
 
