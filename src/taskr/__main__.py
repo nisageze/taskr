@@ -1,3 +1,5 @@
+import sys
+
 from taskr.cli import main
 
-main()
+sys.exit(main())
