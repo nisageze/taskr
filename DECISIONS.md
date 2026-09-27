@@ -243,6 +243,8 @@ Reddedilen alternatif: main()'in hiçbir şey döndürmeyip sonlandırmayı kend
 
 Bedel 0-255 olan byte sınırının aşılıp aşılmaması kontrolünü yapmak olacaktır.
 
+**[27 Eylül düzeltmesi]** python -m taskr yolu main()'in dönüş değerini kabuğa iletmiyordu; __main__.py değeri kullanmıyor, betik sonuna ulaşınca Python 0 ile çıkıyordu. taskr giriş noktası etkilenmiyordu, çünkü uv'nin ürettiği sarmalayıcı sys.exit(main()) çağırıyor. v0.1.0 öncesinde düzeltildi (2eddea7); cli testleri iki yolun aynı çıkış kodunu verdiğini koruyor.
+
 ---
 
 ## 26 AĞUSTOS 2026 — ÇARŞAMBA
@@ -555,6 +557,8 @@ Reddedilen Alternatif: Değeri kendi fonksiyonumda doğrulayıp TaskrError türe
 
 Bedel: Hata metni ve çıkış kodu argparse'ın ürettiği biçimde kalıyor, SPEC 3.4 kalıbına uymuyor. Ayrıca choices yalnızca metnin geçerli olduğunu doğruluyor, Priority üyesine çevirmiyor; bu eksik açık madde olarak duruyor.
 
+**[27 Eylül düzeltmesi]** Açık madde kapandı: argparse'tan gelen metin Task'a verilmeden önce Priority'ye çevriliyor; önceki kodda bellekteki Task nesnesinin priority alanı str taşıyordu. Kullanıcıya görünmüyordu çünkü list görevleri her zaman diskten okuyor. choices listesi de artık elle yazılmıyor, Priority enum'undan türetiliyor (84507a3).
+
 - id argümanı nasıl alınacak?
 
 Alınan Karar: done ve rm komutlarının id argümanı type=int ile tanımlandı.
@@ -584,3 +588,37 @@ Gerekçe: SPEC'in tanımladığı komut kümesi bir görevi yalnızca iki duruma
 Reddedilen Alternatif: İleride gerekebilecek durumları şimdiden tanımlamak. Kullanılmayan bir enum üyesi, list çıktısında ve testlerde karşılığı olmayan bir dal açardı.
 
 Bedel: Yeni bir durum eklendiğinde enum, list hizalaması ve is_overdue mantığı birlikte gözden geçirilmek zorunda.
+
+---
+
+## 27 EYLÜL 2026 — PAZAR
+
+- __main__.py çıkış kodunu nasıl iletecek?
+
+Alınan Karar: sys.exit(main())
+
+Gerekçe: taskr giriş noktası için üretilen sarmalayıcı aynı satırı çalıştırıyor. İki giriş yolu aynı mekanizmayla çıktığında bugün bulunan hata, yani iki yolun farklı davranması, tekrar edemiyor. Python belgelerinin __main__ sayfasındaki kalıp da bu.
+
+Reddedilen Alternatif: raise SystemExit(main()). Aynı işi import gerektirmeden yapıyor, ama okuyana neden istisna fırlatıldığını sorduruyor ve cevabı mekanizmayı bilmeyi gerektiriyor.
+
+Bedel: __main__.py'ye bir import ekleniyor. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- cli testleri nasıl yazılacak?
+
+Alınan Karar: Tüm cli testleri python -m taskr komutunu ayrı bir süreçte çalıştırıyor, HOME ortam değişkeni pytest'in geçici klasörüne ayarlanıyor.
+
+Gerekçe: storage.py'deki dosya yolu modül yüklenirken hesaplanıyor ve load/save'in varsayılan parametresine tanım anında bağlanıyor. Aynı süreç içinde HOME'u değiştirmek ya da storage.TASKR_FILE'ı değiştirmek bu varsayılanı etkilemiyor; testler yeşil geçip gerçek görev dosyasına yazardı. Ayrı süreç modülleri baştan yüklediği için izolasyon kendiliğinden sağlanıyor. Ek olarak çıkış kodları ve -m yolu gerçek kabuk koşullarında test ediliyor; 25 Ağustos kararındaki hata ancak bu yolla yakalanabiliyordu.
+
+Reddedilen Alternatif: cli modülündeki load ve save adlarını testte yamamak; çalışır ama testi modülün iç yapısına bağlar. storage.py'de varsayılanı None yapıp yolu çağrı anında hesaplamak; doğru çözüm, ama yayın öncesinde bir sözleşme değişikliği.
+
+Bedel: main() süreç içinde test edilemiyor ve testler süreç başlatma maliyeti yüzünden daha yavaş. Yolun modül yüklenirken sabitlenmesi sonraki sürüme kalan bir tasarım borcu. Bu bedeli bilinçli bir şekilde kabul ediyorum.
+
+- Çıkış kodları neyi ifade ediyor?
+
+Alınan Karar: 0 başarı, 1 taskr hatası (TaskrError ve komutsuz çağrı), 2 kullanım hatası (bilinmeyen komut, geçersiz --priority değeri, sayı olmayan id).
+
+Gerekçe: 2 argparse'ın kendi sys.exit(2) çağrısından geliyor. Ayrı kalması, komutun yanlış yazıldığı durum ile doğru yazılmış bir komutun çalışırken başarısız olduğu durumu ayırıyor. Bu davranış 19 Eylül'de fark edildi ama yazılı değildi; test_unknown_command_exits_2 artık koruyor.
+
+Reddedilen Alternatif: argparse hatalarını da 1'e çevirmek. ArgumentParser.error metodunu ezmeyi gerektirir, v0.1.0 kullanıcısına bir kazancı yok.
+
+Bedel: Kullanıcı iki farklı hata kodu görüyor; README'de belgelenmesi gerekiyor.
