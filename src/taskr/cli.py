@@ -4,7 +4,7 @@ from collections.abc import Callable
 from datetime import date, datetime
 
 from taskr.errors import InvalidDateError, InvalidTitleError, TaskrError
-from taskr.models import Status, Task, find_task
+from taskr.models import Priority, Status, Task, find_task
 from taskr.storage import load, save
 
 
@@ -17,7 +17,7 @@ def main() -> int:
     add_arg.set_defaults(func=add_func)
     add_arg.add_argument("title", help="task title")
     add_arg.add_argument("--due", help="due date for task", type=date_format_check)
-    add_arg.add_argument("--priority", help="high, medium, low priority", choices=["high", "medium", "low"])
+    add_arg.add_argument("--priority", help="task priority", choices=[p.value for p in Priority])
 
     list_arg = subparsers.add_parser("list", help="list tasks")
     list_arg.set_defaults(func=list_func)
@@ -64,7 +64,7 @@ def add_func(args: argparse.Namespace) -> None:
     if args.priority is None:
         new_task = Task(id=new_id, title=args.title,  due_date=args.due)
     else:
-        new_task = Task(id=new_id, title=args.title, priority=args.priority, due_date=args.due)
+        new_task = Task(id=new_id, title=args.title, priority=Priority(args.priority), due_date=args.due)
 
     task_data.tasks.append(new_task)
     save(task_data)

@@ -47,3 +47,10 @@ def test_unknown_command_exits_2(tmp_path):
 def test_tasks_file_is_isolated(tmp_path):
     run_taskr(tmp_path, "add", "Read Book")
     assert (tmp_path/".taskr"/"tasks.json").exists()
+
+def test_add_with_priority_shows_in_list(tmp_path):
+    priority_high = run_taskr(tmp_path, "add", "Read Book", "--priority", "high")
+    assert priority_high.returncode == 0
+
+    listed = run_taskr(tmp_path, "list")
+    assert "high" in listed.stdout
