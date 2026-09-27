@@ -35,10 +35,10 @@ class Task:
 
     def mark_done(self) -> None:
         self.status = Status.DONE
-        self.completed_at = datetime.now() # noqa: DTZ005
+        self.completed_at = datetime.now()  # noqa: DTZ005
 
 
-def find_task(tasks:list[Task], task_id: int) -> Task:
+def find_task(tasks: list[Task], task_id: int) -> Task:
     for task in tasks:
         if task.id == task_id:
             return task

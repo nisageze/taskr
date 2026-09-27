@@ -17,7 +17,9 @@ def main() -> int:
     add_arg.set_defaults(func=add_func)
     add_arg.add_argument("title", help="task title")
     add_arg.add_argument("--due", help="due date for task", type=date_format_check)
-    add_arg.add_argument("--priority", help="task priority", choices=[p.value for p in Priority])
+    add_arg.add_argument(
+        "--priority", help="task priority", choices=[p.value for p in Priority]
+    )
 
     list_arg = subparsers.add_parser("list", help="list tasks")
     list_arg.set_defaults(func=list_func)
@@ -45,11 +47,13 @@ def main() -> int:
         print(f"Error: {e}", file=sys.stderr)
         return 1
 
+
 def date_format_check(d: str) -> date:
     try:
-        return datetime.strptime(d, "%Y-%m-%d").date() # noqa: DTZ007
+        return datetime.strptime(d, "%Y-%m-%d").date()  # noqa: DTZ007
     except ValueError as e:
         raise InvalidDateError(d) from e
+
 
 def add_func(args: argparse.Namespace) -> None:
 
@@ -62,14 +66,18 @@ def add_func(args: argparse.Namespace) -> None:
     task_data.last_id = new_id
 
     if args.priority is None:
-        new_task = Task(id=new_id, title=args.title,  due_date=args.due)
+        new_task = Task(id=new_id, title=args.title, due_date=args.due)
     else:
-        new_task = Task(id=new_id, title=args.title, priority=Priority(args.priority), due_date=args.due)
+        new_task = Task(
+            id=new_id,
+            title=args.title,
+            priority=Priority(args.priority),
+            due_date=args.due,
+        )
 
     task_data.tasks.append(new_task)
     save(task_data)
     print(f"Task {new_task.id} added.")
-
 
 
 def list_func(args: argparse.Namespace) -> None:
@@ -79,14 +87,19 @@ def list_func(args: argparse.Namespace) -> None:
         print("No tasks yet.")
         return
 
-    print(f"{"ID":<3}{"PRIORITY":<9}{"STATUS":<8}{"DUE":<12}{"TITLE"}")
-    print(f"{"--":<3}{"--------":<9}{"-------":<8}{"-----------":<12}{"-----------------------"}")
+    print(f"{'ID':<3}{'PRIORITY':<9}{'STATUS':<8}{'DUE':<12}{'TITLE'}")
+    print(
+        f"{'--':<3}{'--------':<9}{'-------':<8}{'-----------':<12}{'-----------------------'}"
+    )
 
     for task in task_data.tasks:
         due_date = task.due_date.isoformat() if task.due_date is not None else "-"
         mark = "! " if task.is_overdue() else ""
 
-        print(f"{task.id:<3}{task.priority.value:<9}{task.status.value:<8}{due_date:<12}{mark}{task.title}")
+        print(
+            f"{task.id:<3}{task.priority.value:<9}{task.status.value:<8}{due_date:<12}{mark}{task.title}"
+        )
+
 
 def done_func(args: argparse.Namespace) -> None:
     task_data = load()
@@ -98,6 +111,7 @@ def done_func(args: argparse.Namespace) -> None:
         task.mark_done()
         save(task_data)
         print(f"Task {task.id} completed.")
+
 
 def rm_func(args: argparse.Namespace) -> None:
     task_data = load()

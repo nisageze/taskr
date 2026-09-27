@@ -14,10 +14,12 @@ from taskr.models import Priority, Status, Task
 TASKR_FOLDER = Path.home() / ".taskr"
 TASKR_FILE = TASKR_FOLDER / "tasks.json"
 
+
 @dataclass
 class TaskData:
     tasks: list[Task]
     last_id: int
+
 
 def ensure_folder(taskr_file: Path = TASKR_FILE) -> None:
     taskr_file.parent.mkdir(parents=True, exist_ok=True)
@@ -47,7 +49,9 @@ def save(data: TaskData, taskr_file: Path = TASKR_FILE) -> None:
     tasks_dict = {"tasks": tasks_data, "last_id": id_data}
     temporary_taskr = taskr_file.with_name(taskr_file.name + ".tmp")
     with open(temporary_taskr, "w", encoding="utf-8") as file:
-        json.dump(tasks_dict, file, default=json_serialize, indent=2, ensure_ascii=False)
+        json.dump(
+            tasks_dict, file, default=json_serialize, indent=2, ensure_ascii=False
+        )
     os.replace(temporary_taskr, taskr_file)
 
 
