@@ -243,7 +243,7 @@ Reddedilen alternatif: main()'in hiçbir şey döndürmeyip sonlandırmayı kend
 
 Bedel 0-255 olan byte sınırının aşılıp aşılmaması kontrolünü yapmak olacaktır.
 
-**[27 Eylül düzeltmesi]** python -m taskr yolu main()'in dönüş değerini kabuğa iletmiyordu; __main__.py değeri kullanmıyor, betik sonuna ulaşınca Python 0 ile çıkıyordu. taskr giriş noktası etkilenmiyordu, çünkü uv'nin ürettiği sarmalayıcı sys.exit(main()) çağırıyor. v0.1.0 öncesinde düzeltildi (2eddea7); cli testleri iki yolun aynı çıkış kodunu verdiğini koruyor.
+**[27 Eylül düzeltmesi]** python -m taskr yolu main()'in dönüş değerini kabuğa iletmiyordu; __main__.py değeri kullanmıyor, betik sonuna ulaşınca Python 0 ile çıkıyordu. taskr giriş noktası etkilenmiyordu, çünkü uv'nin ürettiği sarmalayıcı sys.exit(main()) çağırıyor. v0.1.0 öncesinde düzeltildi (4878fee); cli testleri iki yolun aynı çıkış kodunu verdiğini koruyor.
 
 ---
 
@@ -557,7 +557,7 @@ Reddedilen Alternatif: Değeri kendi fonksiyonumda doğrulayıp TaskrError türe
 
 Bedel: Hata metni ve çıkış kodu argparse'ın ürettiği biçimde kalıyor, SPEC 3.4 kalıbına uymuyor. Ayrıca choices yalnızca metnin geçerli olduğunu doğruluyor, Priority üyesine çevirmiyor; bu eksik açık madde olarak duruyor.
 
-**[27 Eylül düzeltmesi]** Açık madde kapandı: argparse'tan gelen metin Task'a verilmeden önce Priority'ye çevriliyor; önceki kodda bellekteki Task nesnesinin priority alanı str taşıyordu. Kullanıcıya görünmüyordu çünkü list görevleri her zaman diskten okuyor. choices listesi de artık elle yazılmıyor, Priority enum'undan türetiliyor (84507a3).
+**[27 Eylül düzeltmesi]** Açık madde kapandı: argparse'tan gelen metin Task'a verilmeden önce Priority'ye çevriliyor; önceki kodda bellekteki Task nesnesinin priority alanı str taşıyordu. Kullanıcıya görünmüyordu çünkü list görevleri her zaman diskten okuyor. choices listesi de artık elle yazılmıyor, Priority enum'undan türetiliyor (1ed4240).
 
 - id argümanı nasıl alınacak?
 
