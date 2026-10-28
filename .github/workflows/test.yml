@@ -10,13 +10,20 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: curl -LsSf https://astral.sh | sh
-      - run: |
-            echo "$HOME/.local/bin" >> $GITHUB_PATH
-            $HOME/.local/bin/uv sync
-      - run: |
-            chmod +x check.sh
-            $HOME/.local/bin/uv run ./check.sh
+
+      - name: UV Paket Yoneticisini Kur
+        run: curl -LsSf https://astral.sh | sh
+
+      - name: Bagimliliklari Yukle
+        run: |
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          $HOME/.local/bin/uv sync
+
+      - name: Kontrol Betigini Calistir
+        run: |
+          chmod +x check.sh
+          $HOME/.local/bin/uv run ./check.sh
