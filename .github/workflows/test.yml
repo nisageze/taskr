@@ -1,0 +1,22 @@
+name: run all the test
+
+on: [push]
+
+jobs:
+  check-run-job:
+    name: check.sh Run
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: curl -LsSf https://astral.sh | sh
+      - run: |
+            echo "$HOME/.local/bin" >> $GITHUB_PATH
+            $HOME/.local/bin/uv sync
+      - run: |
+            chmod +x check.sh
+            $HOME/.local/bin/uv run ./check.sh
