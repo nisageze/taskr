@@ -5,7 +5,6 @@ on: [push]
 jobs:
   check-run-job:
     name: check.sh Run
-
     runs-on: ubuntu-latest
 
     steps:
@@ -15,15 +14,12 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: UV Paket Yoneticisini Kur
-        run: curl -LsSf https://astral.sh | sh
+      - run: curl -LsSf https://astral.sh | sh
 
-      - name: Bagimliliklari Yukle
-        run: |
+      - run: |
           echo "$HOME/.local/bin" >> $GITHUB_PATH
           $HOME/.local/bin/uv sync
 
-      - name: Kontrol Betigini Calistir
-        run: |
+      - run: |
           chmod +x check.sh
           $HOME/.local/bin/uv run ./check.sh
